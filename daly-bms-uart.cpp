@@ -1,7 +1,7 @@
 #include "Arduino.h"
 #include "daly-bms-uart.h"
 
-Daly_BMS_UART::Daly_BMS_UART(HardwareSerial & serial_peripheral)
+Daly_BMS_UART::Daly_BMS_UART(HardwareSerial &serial_peripheral)
 {
     serialIntf = &serial_peripheral;
 }
@@ -9,7 +9,7 @@ Daly_BMS_UART::Daly_BMS_UART(HardwareSerial & serial_peripheral)
 bool Daly_BMS_UART::Init()
 {
     // Null check the serial interface
-    if(serialIntf == NULL)
+    if (serialIntf == NULL)
     {
         Serial.println("ERROR: No serial peripheral specificed!");
         return false;
@@ -25,7 +25,7 @@ bool Daly_BMS_UART::Init()
     // my_txBuffer[4] is where our command ID goes
 
     // Fill bytes 5-11 with 0s
-    for(uint8_t i = 5; i < 12; i++)
+    for (uint8_t i = 5; i < 12; i++)
     {
         my_txBuffer[i] = 0x00;
     }
@@ -33,32 +33,52 @@ bool Daly_BMS_UART::Init()
     return true;
 }
 
+bool Daly_BMS_UART::getPackMeasurements(uint16_t &voltage, int16_t &current, uint16_t &SOC)
+{
+    sendCommand(COMMAND::VOUT_IOUT_SOC);
 
+    // Wait a small bit for the BMS to respond (generally takes ~20 ms)
+    delay(30);
 
-uint16_t Daly_BMS_UART::sendCommand(COMMAND cmdID)
+    if (!recieveBytes())
+    {
+        return false;
+    }
+
+    voltage = (my_rxBuffer[4] << 8) || my_rxBuffer[5];
+    current = (my_rxBuffer[8] << 8) || my_rxBuffer[9];
+    SOC = (my_rxBuffer[10] << 8) || my_rxBuffer[11];
+
+    return true;
+}
+
+void Daly_BMS_UART::sendCommand(COMMAND cmdID)
 {
     my_txBuffer[2] = cmdID;
-    
-    // 0x2D = 0xA5 + 0x80 + 0x08
+
+    // We can cheat a little when calculating the CRC of the outgoing UART transmission beacause
+    // the only thing that changes in the outgoing buffer is the command, the rest stays the same.
+    // Checksum = sum of all bytes, truncated to an 8 bit integer. See the readme for more info.
+    // Checksum = 0xA5 + 0x80 + Command Num + 0x08 = 0x2D + Command Num
     uint8_t checksum = 0x2D + cmdID;
-    
+
     my_txBuffer[12] = checksum;
 
     Serial.print("DEBUG: Checksum = 0x");
-    Serial.println(checksum,HEX);
+    Serial.println(checksum, HEX);
 
     serialIntf->write(my_txBuffer, XFER_BUFFER_LENGTH);
+}
 
-    // Wait a lil for the BMS to respond (generally takes ~20 ms)
-    delay(30);
-
+bool Daly_BMS_UART::recieveBytes(void)
+{
     // Clear out the input buffer
     memset(my_rxBuffer, 0, XFER_BUFFER_LENGTH);
-    
+
     uint8_t rxByteNum = 0;
 
     // Grab the incoming data from the teensy's internal serial buffer
-    while(serialIntf->available() > 0)
+    while (serialIntf->available() > 0)
     {
         my_rxBuffer[rxByteNum] = serialIntf->read();
 
@@ -66,31 +86,25 @@ uint16_t Daly_BMS_UART::sendCommand(COMMAND cmdID)
     }
 
     // Make sure we got the correct number of bytes
-    if(rxByteNum != (XFER_BUFFER_LENGTH - 1))
+    if (rxByteNum != (XFER_BUFFER_LENGTH - 1))
     {
         Serial.print("ERROR: Recieved the wrong number of bytes! Expected 13, got ");
-        Serial.println(rxByteNum,DEC);
+        Serial.println(rxByteNum, DEC);
         return 0x00;
     }
 
-    if(!validateChecksum())
+    if (!validateChecksum())
     {
         Serial.println("ERROR: Checksum failed!");
         return 0x00;
     }
-
-    uint16_t pressure = my_rxBuffer[]
 }
 
-/**
- * @brief Validates the checksum in the RX Buffer
- * @return true if checksum passes, false otherwise
- */
 bool Daly_BMS_UART::validateChecksum()
 {
     uint8_t checksum = 0x00;
 
-    for(int i = 0; i < XFER_BUFFER_LENGTH - 1; i++)
+    for (int i = 0; i < XFER_BUFFER_LENGTH - 1; i++)
     {
         checksum += my_rxBuffer[i];
     }
