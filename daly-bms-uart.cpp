@@ -21,11 +21,11 @@ bool Daly_BMS_UART::Init()
     // Set up the output buffer with some values that won't be changing
     my_txBuffer[0] = 0xA5; // Start byte
     my_txBuffer[1] = 0x80; // Host address
+    // my_txBuffer[2] is where our command ID goes
     my_txBuffer[3] = 0x08; // Length?
-    // my_txBuffer[4] is where our command ID goes
 
     // Fill bytes 5-11 with 0s
-    for (uint8_t i = 5; i < 12; i++)
+    for (uint8_t i = 4; i < 12; i++)
     {
         my_txBuffer[i] = 0x00;
     }
@@ -45,6 +45,7 @@ bool Daly_BMS_UART::getPackMeasurements(uint16_t &voltage, int16_t &current, uin
         return false;
     }
 
+    // Pull the relevent values out of the buffer
     voltage = (my_rxBuffer[4] << 8) || my_rxBuffer[5];
     current = (my_rxBuffer[8] << 8) || my_rxBuffer[9];
     SOC = (my_rxBuffer[10] << 8) || my_rxBuffer[11];
@@ -90,14 +91,16 @@ bool Daly_BMS_UART::recieveBytes(void)
     {
         Serial.print("ERROR: Recieved the wrong number of bytes! Expected 13, got ");
         Serial.println(rxByteNum, DEC);
-        return 0x00;
+        return false;
     }
 
     if (!validateChecksum())
     {
         Serial.println("ERROR: Checksum failed!");
-        return 0x00;
+        return false;
     }
+
+    return true;
 }
 
 bool Daly_BMS_UART::validateChecksum()

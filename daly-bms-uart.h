@@ -30,7 +30,7 @@ private:
     bool recieveBytes(void);
     /**
      * @brief Validates the checksum in the RX Buffer
-     * @return true if checksum passes, false otherwise
+     * @return true if checksum matches, false otherwise
      */
     bool validateChecksum();
 
@@ -38,4 +38,4 @@ private:
     uint8_t my_rxBuffer[XFER_BUFFER_LENGTH];
 };
 
-#endif
+#endif // DALY_BMS_UART_H
