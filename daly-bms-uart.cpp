@@ -1,6 +1,10 @@
 #include "Arduino.h"
 #include "daly-bms-uart.h"
 
+//----------------------------------------------------------------------
+// Public Functions
+//----------------------------------------------------------------------
+
 Daly_BMS_UART::Daly_BMS_UART(HardwareSerial &serial_peripheral)
 {
     serialIntf = &serial_peripheral;
@@ -68,10 +72,35 @@ bool Daly_BMS_UART::getPackTemp(int8_t &temp)
         return false;
     }
 
-    temp = (my_rxBuffer[4] - 40);
+    int8_t max_temp = (my_rxBuffer[4] - 40);
+    int8_t min_temp = (my_rxBuffer[6] - 40);
+
+    temp = (max_temp + min_temp) / 2;
 
     return true;
 }
+
+bool Daly_BMS_UART::getMinMaxCellVoltage(float &minCellV, uint8_t &minCellVNum, float &maxCellV, uint8_t &maxCellVNum)
+{
+    sendCommand(COMMAND::MIN_MAX_CELL_VOLTAGE);
+
+    if (!receiveBytes())
+    {
+#ifdef DALY_BMS_DEBUG
+        Serial.printf("<DALY-BMS DEBUG> Receive failed, min/max cell values won't be modified!\n");
+#endif
+        return false;
+    }
+
+    maxCellV = (float)((my_rxBuffer[4] << 8) | my_rxBuffer[5]) / 1000; // Given in mV, convert to V
+    maxCellVNum = my_rxBuffer[6];
+    minCellV = (float)((my_rxBuffer[7] << 8) | my_rxBuffer[8]) / 1000; // Given in mV, convert to V
+    minCellVNum = my_rxBuffer[9];
+}
+
+//----------------------------------------------------------------------
+// Private Functions
+//----------------------------------------------------------------------
 
 void Daly_BMS_UART::sendCommand(COMMAND cmdID)
 {

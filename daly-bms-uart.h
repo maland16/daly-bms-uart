@@ -26,11 +26,13 @@ public:
     };
 
     Daly_BMS_UART(HardwareSerial &serialIntf);
+
     /**
      * @brief Initializes this driver
      * @details Configures the serial peripheral and pre-loads the transmit buffer with command-independent bytes
      */
     bool Init();
+
     /**
      * @brief Gets Voltage, Current, and SOC measurements from the BMS
      * @param voltage returns voltage in deci-volts (ex. 57.3V = 573)
@@ -39,30 +41,57 @@ public:
      * @return True on successful aquisition, false otherwise
      */
     bool getPackMeasurements(uint16_t &voltage, int16_t &current, uint16_t &SOC);
+
     /**
      * @brief Gets the pack temperature in degrees celcius
+     * @details This function uses the MIN_MAX_TEMPERATURE command, and averages the 
+     * min and max temperatures to get the returned value
      * @return True on successful aquisition, false otherwise
      */
     bool getPackTemp(int8_t &temp);
 
+    /**
+     * @brief
+     */
+    bool getMinMaxCellVoltage(float &minCellV, uint8_t &minCellVNum, float &maxCellV, uint8_t &maxCellVNum);
+
 private:
     HardwareSerial *serialIntf;
 
-    void sendCommand(COMMAND cmdID);
     /**
-     * @brief
+     * @brief Sends a complete packet with the specified command
+     * @details calculates the checksum and sends the command over the specified serial connection
+     */
+    void sendCommand(COMMAND cmdID);
+
+    /**
+     * @brief 
      * @details
      * @return True on success, false on failure
      */
     bool receiveBytes(void);
+
     /**
      * @brief Validates the checksum in the RX Buffer
      * @return true if checksum matches, false otherwise
      */
     bool validateChecksum();
 
+    /**
+     * @brief Prints out the contense of the RX buffer
+     * @details Useful for debugging
+     */
     void barfRXBuffer();
+
+    /**
+     * @brief Buffer used to transmit data to the BMS
+     * @details Populated primarily in the "Init()" function, see the readme for more info
+     */
     uint8_t my_txBuffer[XFER_BUFFER_LENGTH];
+
+    /**
+     * @brief Buffer filled with data from the BMS
+     */
     uint8_t my_rxBuffer[XFER_BUFFER_LENGTH];
 };
 
