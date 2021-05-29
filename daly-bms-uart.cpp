@@ -11,7 +11,7 @@ bool Daly_BMS_UART::Init()
     // Null check the serial interface
     if (serialIntf == NULL)
     {
-        Serial.println("ERROR: No serial peripheral specificed!");
+        Serial.println("<DALY-BMS DEBUG> ERROR: No serial peripheral specificed!");
         return false;
     }
 
@@ -40,17 +40,22 @@ bool Daly_BMS_UART::getPackMeasurements(uint16_t &voltage, int16_t &current, uin
     // Wait a small bit for the BMS to respond (generally takes ~20 ms)
     delay(30);
 
-    if (!recieveBytes())
-    {
-        return false;
-    }
+    receiveBytes();
+    //if (!receiveBytes())
+    //{
+    //    return false;
+    //}
 
     // Pull the relevent values out of the buffer
-    voltage = (my_rxBuffer[4] << 8) || my_rxBuffer[5];
-    current = (my_rxBuffer[8] << 8) || my_rxBuffer[9];
-    SOC = (my_rxBuffer[10] << 8) || my_rxBuffer[11];
+    voltage = (my_rxBuffer[4] << 8) | my_rxBuffer[5];
+    current = (my_rxBuffer[8] << 8) | my_rxBuffer[9];
+    SOC = (my_rxBuffer[10] << 8) | my_rxBuffer[11];
 
     return true;
+}
+
+bool Daly_BMS_UART::getPackTemp(int8_t &temp)
+{
 }
 
 void Daly_BMS_UART::sendCommand(COMMAND cmdID)
@@ -65,13 +70,13 @@ void Daly_BMS_UART::sendCommand(COMMAND cmdID)
 
     my_txBuffer[12] = checksum;
 
-    Serial.print("DEBUG: Checksum = 0x");
+    Serial.print("<DALY-BMS DEBUG> Checksum = 0x");
     Serial.println(checksum, HEX);
 
     serialIntf->write(my_txBuffer, XFER_BUFFER_LENGTH);
 }
 
-bool Daly_BMS_UART::recieveBytes(void)
+bool Daly_BMS_UART::receiveBytes(void)
 {
     // Clear out the input buffer
     memset(my_rxBuffer, 0, XFER_BUFFER_LENGTH);
@@ -89,14 +94,14 @@ bool Daly_BMS_UART::recieveBytes(void)
     // Make sure we got the correct number of bytes
     if (rxByteNum != (XFER_BUFFER_LENGTH - 1))
     {
-        Serial.print("ERROR: Recieved the wrong number of bytes! Expected 13, got ");
+        Serial.print("<DALY-BMS DEBUG> Error: Received the wrong number of bytes! Expected 13, got ");
         Serial.println(rxByteNum, DEC);
         return false;
     }
 
     if (!validateChecksum())
     {
-        Serial.println("ERROR: Checksum failed!");
+        Serial.println("<DALY-BMS DEBUG> Error: Checksum failed!");
         return false;
     }
 

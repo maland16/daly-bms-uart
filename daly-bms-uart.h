@@ -17,6 +17,7 @@ public:
     Daly_BMS_UART(HardwareSerial &serialIntf);
     bool Init();
     bool getPackMeasurements(uint16_t &voltage, int16_t &current, uint16_t &SOC);
+    bool getPackTemp(int8_t &temp);
 
 private:
     HardwareSerial *serialIntf;
@@ -27,7 +28,7 @@ private:
      * @details
      * @return True on success, false on failure
      */
-    bool recieveBytes(void);
+    bool receiveBytes(void);
     /**
      * @brief Validates the checksum in the RX Buffer
      * @return true if checksum matches, false otherwise
