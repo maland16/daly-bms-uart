@@ -1,12 +1,12 @@
 # Arduino Library for basic communication with a DALY BMS
 This library uses the Arduino Serial library to communicate with a DALY BMS over UART. It was originally designed for use with the **Teensy 4.0** as a part of [this project](https://github.com/maland16/citicar-charger) and has not been tested on official Arduino hardware. 
 
-## How to use this library
--Download a zip of this library using the green button above
--Follow [the instructions here](https://www.arduino.cc/en/guide/libraries) under "Manual installation"
--Use the public functions defined in "daly-bms-uart.h" to your hearts content
--Don't forget to construct a Daly_BMS_UART object and Init()!
--See the example that's included in this library
+## How to use this library  
+-Download a zip of this library using the green button above  
+-Follow [the instructions here](https://www.arduino.cc/en/guide/libraries) under "Manual installation"  
+-Use the public functions defined in "daly-bms-uart.h" to your hearts content  
+-Don't forget to construct a Daly_BMS_UART object and Init()!  
+-See the example that's included in this library  
 
 ## Hardware setup
 Below is a picture of the side of my DALY bms (yours might look slightly different) showing which pins are used to communicate over UART. 
