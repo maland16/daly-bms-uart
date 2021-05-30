@@ -21,12 +21,16 @@ Here's what an outgoing packet will look like. It's always fixed 13 bytes, and t
 | - | - | - | - | - | - | 
 | 0xA5 | 0x80 | See below | 0x08 (fixed) | 0x0000000000000000 (8 bytes) | See below |
 
-This is what an incoming packet might look like
+This is what an incoming packet might look like. In this case it's the "Voltage, Current, and SOC" command. 
 | Start Byte      | Host Address | Command ID | Data Length | Data | Checksum | 
 | - | - | - | - | - | - | 
-| 0xA5 | 0x01 | See below | 0x08 (fixed?*) | 0x0000000000000000 (8 bytes) | See below |
+| 0xA5 | 0x01 | 0x90 (see below) | 0x08 (fixed?*) | 0x023A0000753001ED (8 bytes) | 0x0D (See below) |
 
-\*It's not made totally clear in the protocol description, but it seems like the received data length might actually be longer for certain commands, like the cell voltage & temperature sensor readings
+\*It's not made totally clear in the protocol description but it seems like the received data length might actually be longer for certain commands. Reading all cell voltages & all temperature sensor readings are examples of commands that could have much longer data sections.  
+
+The first two bytes of the Data correspond to the Voltage in tenths of volts (0x023A = 570 = 57.0V). I'm honestly not sure what the next two bytes are for, the documentation calls them "acquisition voltage". They always come back 0 for me so lets skip them. The next two bytes are the current in tenths of amps, with an offset of 30000 (0x7530 = 300000 - 30,000 = 0 = 0.0A). The final two bytes are the state of chare (or SOC) in tenths of a percent (0x01ED = 493 = 49.3%).   
+The last byte of the packet is a checksum, which is calculated by summing up all the rest of the bytes in the packet and truncating the result to one byte. (0xA5 + 0x01 + 0x90 + ... + 0xED = 0x30D = 0x0D).  
+
 ### Supported Commands
 Here's an overview of the commands that are supported by this library. See the full protocol info in /docs/ for more info.  
 | Command | Hex | Support API |  
