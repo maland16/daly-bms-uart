@@ -14,21 +14,22 @@ void setup() {
 void loop() {
 
   // Set up some variables to hold the values
-  uint16_t volts = 0;
-  int16_t amps = 0;
-  uint16_t percentage = 0;
+  float volts = 0;
+  float amps = 0;
+  float percentage = 0;
 
   // Grab those values from the BMS
   bms.getPackMeasurements(volts, amps, percentage);
 
   // And print them out!
-  Serial.printf("V: %d, I: %d, \%:%d\n",volts, amps, percentage);
+  Serial.printf("V: %4.1f, I: %4.1f, \%:%4.1f\n",volts, amps, percentage);
 
   // Now the same thing, but for temperature
   int8_t temp = 0;
   bms.getPackTemp(temp);
   Serial.printf("Temp: %d\n",temp);
 
+  // And again, for min/max cell voltages
   float maxCellVoltage = 0;
   float minCellVoltage = 0;
   uint8_t maxCellNumber = 0;

@@ -5,7 +5,7 @@
 
 // Uncomment the below #define to enable debugging print statements.
 // NOTE: You must call Serial.being(<baud rate>) in your setup() for this to work
-#define DALY_BMS_DEBUG
+//#define DALY_BMS_DEBUG
 
 #define XFER_BUFFER_LENGTH 13
 
@@ -40,7 +40,7 @@ public:
      * @param SOC returns soc in tenths of percent (ex 49.3% = 493)
      * @return True on successful aquisition, false otherwise
      */
-    bool getPackMeasurements(uint16_t &voltage, int16_t &current, uint16_t &SOC);
+    bool getPackMeasurements(float &voltage, float &current, float &SOC);
 
     /**
      * @brief Gets the pack temperature in degrees celcius
@@ -51,13 +51,13 @@ public:
     bool getPackTemp(int8_t &temp);
 
     /**
-     * @brief
+     * @brief Returns the highest and lowest individual cell voltage, and which cell is highest/lowest
+     * @details Voltages are returned as floats with milliVolt precision (3 decimal places)
+     * @return True on successful aquisition, false otherwise
      */
     bool getMinMaxCellVoltage(float &minCellV, uint8_t &minCellVNum, float &maxCellV, uint8_t &maxCellVNum);
 
 private:
-    HardwareSerial *serialIntf;
-
     /**
      * @brief Sends a complete packet with the specified command
      * @details calculates the checksum and sends the command over the specified serial connection
@@ -82,6 +82,12 @@ private:
      * @details Useful for debugging
      */
     void barfRXBuffer();
+
+    /**
+     * @brief Serial interface used for communication
+     * @details This is set in the constructor
+     */
+    HardwareSerial *my_serialIntf;
 
     /**
      * @brief Buffer used to transmit data to the BMS

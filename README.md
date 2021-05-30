@@ -1,10 +1,10 @@
-# Arduino Library for basic communication with a DALY BMS
+# Overview
 This library uses the Arduino Serial library to communicate with a DALY BMS over UART. It was originally designed for use with the **Teensy 4.0** as a part of [this project](https://github.com/maland16/citicar-charger) and has not been tested on official Arduino hardware. 
 
 ## How to use this library  
 -Download a zip of this library using the green button above  
 -Follow [the instructions here](https://www.arduino.cc/en/guide/libraries) under "Manual installation"  
--Use the public functions defined in "daly-bms-uart.h" to your hearts content  
+-Use the public functions defined in "daly-bms-uart.h" to your heart's content  
 -Don't forget to construct a Daly_BMS_UART object and Init()!  
 -See the example that's included in this library  
 
@@ -27,17 +27,13 @@ This is what an incoming packet might look like
 | 0xA5 | 0x01 | See below | 0x08 (fixed?*) | 0x0000000000000000 (8 bytes) | See below |
 
 \*It's not made totally clear in the protocol description, but it seems like the received data length might actually be longer for certain commands, like the cell voltage & temperature sensor readings
-### Commands
-Here's an overview of some of the commands. See the full protocol info in /docs/ for more info.  
-| Command | Hex | Supported by this library |  
+### Supported Commands
+Here's an overview of the commands that are supported by this library. See the full protocol info in /docs/ for more info.  
+| Command | Hex | Support API |  
 | - | - | - |
-| Voltage, Current, SOC | 0x90 | Yes! With the getPackMeasurements() function |  
-| Min & Max Cell Voltages | 0x91 | yep, use getMinMaxCellVoltage() |  
-| Min & Max Temp Sensor readings | 0x92 | Yep. getPackTemp() will take the min and max temperature readings, average them, and return that value. Most of the DALY BMSs that I've seen only have one temperature sensor. |  
-| DISCHARGE_CHARGE_MOS_STATUS | 0x93 | No |  
-| STATUS_INFO | 0x94 | No |  
-| CELL_VOLTAGES | 0x95 | No |  
-| FAILURE_CODES | 0x98 | No |  
+| Voltage, Current, SOC | 0x90 | getPackMeasurements() |  
+| Min & Max Cell Voltages | 0x91 | getMinMaxCellVoltage() |  
+| Min & Max Temp Sensor readings | 0x92 | getPackTemp() will take the min and max temperature readings, average them, and return that value. Most of the DALY BMSs that I've seen only have one temperature sensor. |  
 
 ## Troubleshooting
 Uncomment [this define](https://github.com/maland16/daly-bms-uart/blob/main/daly-bms-uart.h#L8) to get lots of debug printing to the Arduino Serial Monitor. I added these statements to help as I developed the code and ran into issues. Beyond that, I've done my best to comment extensively.
