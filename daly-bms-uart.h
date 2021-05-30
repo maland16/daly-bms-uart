@@ -1,5 +1,3 @@
-
-
 #ifndef DALY_BMS_UART_H
 #define DALY_BMS_UART_H
 
@@ -35,15 +33,15 @@ public:
 
     /**
      * @brief Gets Voltage, Current, and SOC measurements from the BMS
-     * @param voltage returns voltage in deci-volts (ex. 57.3V = 573)
-     * @param current returns current out of the battery in deci-amps (ex. 3.9A = 39)
-     * @param SOC returns soc in tenths of percent (ex 49.3% = 493)
+     * @param voltage returns voltage in volts with deci-volt precision
+     * @param current returns current in amps with deci-amp precision
+     * @param SOC returns state of charge out of 100% with tenth of percent precision
      * @return True on successful aquisition, false otherwise
      */
     bool getPackMeasurements(float &voltage, float &current, float &SOC);
 
     /**
-     * @brief Gets the pack temperature in degrees celcius
+     * @brief Gets the pack temperature in degrees celsius
      * @details This function uses the MIN_MAX_TEMPERATURE command, and averages the 
      * min and max temperatures to get the returned value
      * @return True on successful aquisition, false otherwise
