@@ -60,15 +60,68 @@ struct
 }set;
 struct
 {
-      bool level1AlarmThresholdForHighPackVoltage_100mV;
-      bool level2AlarmThresholdForHighPackVoltage_100mV;
-      bool level1AlarmThresholdForLowPackVoltage_100mV;
-      bool level2AlarmThresholdForLowPackVoltage_100mV;
+    //data from 0x98
+ /* 0x00 */
+    bool levelOneCellVoltageTooHigh;
+    bool levelTwoCellVoltageTooHigh;
+    bool levelOneCellVoltageTooLow;
+    bool levelTwoCellVoltageTooLow;
+    bool levelOnePackVoltageTooHigh;
+    bool levelTwoPackVoltageTooHigh;
+    bool levelOnePackVoltageTooLow;
+    bool levelTwoPackVoltageTooLow;
 
-      bool level1AlarmThresholdForHighChargeCurrent_100mA;
-      bool level2AlarmThresholdForHighChargeCurrent_100mA;
-      bool level1AlarmThresholdForHighDischargeCurrent_100mA;
-      bool level2AlarmThresholdForHighDischargeCurrent_100mA;
+    /* 0x01 */
+    bool levelOneChargeTempTooHigh;
+    bool levelTwoChargeTempTooHigh;
+    bool levelOneChargeTempTooLow;
+    bool levelTwoChargeTempTooLow;
+    bool levelOneDischargeTempTooHigh;
+    bool levelTwoDischargeTempTooHigh;
+    bool levelOneDischargeTempTooLow;
+    bool levelTwoDischargeTempTooLow;
+
+    /* 0x02 */
+    bool levelOneChargeCurrentTooHigh;
+    bool levelTwoChargeCurrentTooHigh;
+    bool levelOneDischargeCurrentTooHigh;
+    bool levelTwoDischargeCurrentTooHigh;
+    bool levelOneStateOfChargeTooHigh;
+    bool levelTwoStateOfChargeTooHigh;
+    bool levelOneStateOfChargeTooLow;
+    bool levelTwoStateOfChargeTooLow;
+
+    /* 0x03 */
+    bool levelOneCellVoltageDifferenceTooHigh;
+    bool levelTwoCellVoltageDifferenceTooHigh;
+    bool levelOneTempSensorDifferenceTooHigh;
+    bool levelTwoTempSensorDifferenceTooHigh;
+
+    /* 0x04 */
+    bool chargeFETTemperatureTooHigh;
+    bool dischargeFETTemperatureTooHigh;
+    bool failureOfChargeFETTemperatureSensor;
+    bool failureOfDischargeFETTemperatureSensor;
+    bool failureOfChargeFETAdhesion;
+    bool failureOfDischargeFETAdhesion;
+    bool failureOfChargeFETTBreaker;
+    bool failureOfDischargeFETBreaker;
+
+    /* 0x05 */
+    bool failureOfAFEAcquisitionModule;
+    bool failureOfVoltageSensorModule;
+    bool failureOfTemperatureSensorModule;
+    bool failureOfEEPROMStorageModule;
+    bool failureOfRealtimeClockModule;
+    bool failureOfPrechargeModule;
+    bool failureOfVehicleCommunicationModule;
+    bool failureOfIntranetCommunicationModule;
+
+    /* 0x06 */
+    bool failureOfCurrentSensorModule;
+    bool failureOfMainVoltageSensorModule;
+    bool failureOfShortCircuitProtection;
+    bool failureOfLowVoltageNoCharging;
 }alarm;
 
     Daly_BMS_UART(HardwareSerial &serialIntf);
@@ -115,6 +168,11 @@ struct
      * 
      */
     bool getCellVoltages();
+    /**
+     * @brief 
+     * 
+     */
+    bool getFailureCodes();
 private:
     /**
      * @brief Sends a complete packet with the specified command
