@@ -1,5 +1,6 @@
 #include "Arduino.h"
 #include "daly-bms-uart.h"
+#define DALY_BMS_DEBUG
 
 //----------------------------------------------------------------------
 // Public Functions
@@ -39,64 +40,110 @@ bool Daly_BMS_UART::Init()
     return true;
 }
 
-bool Daly_BMS_UART::getPackMeasurements(float &voltage, float &current, float &SOC)
+bool Daly_BMS_UART::update()
+{
+
+    getPackMeasurements();
+    getMinMaxCellVoltage();
+    getPackTemp();
+    getStatusInfo();
+/**
+ * put here the function call to recive all data one by one
+ * check if cell number ar set and then ask for cell data
+ * 
+ */
+
+    if (!this->receiveBytes())
+    {
+#ifdef DALY_BMS_DEBUG
+        Serial.print("Updating the Data Failed\n");
+#endif
+        return false;
+    }
+    return true;
+}
+
+
+bool Daly_BMS_UART::getPackMeasurements()
 {
     this->sendCommand(COMMAND::VOUT_IOUT_SOC);
 
     if (!this->receiveBytes())
     {
 #ifdef DALY_BMS_DEBUG
-        Serial.printf("<DALY-BMS DEBUG> Receive failed, V, I, & SOC values won't be modified!\n");
+        Serial.print("<DALY-BMS DEBUG> Receive failed, V, I, & SOC values won't be modified!\n");
 #endif
         return false;
     }
-
     // Pull the relevent values out of the buffer
-    voltage = (float)((this->my_rxBuffer[4] << 8) | this->my_rxBuffer[5]) / 10;
+    get.packVoltage = (float)((this->my_rxBuffer[4] << 8) | this->my_rxBuffer[5]) / 10;
     // The current measurement is given with a 30000 unit offset
-    current = (float)(((this->my_rxBuffer[8] << 8) | this->my_rxBuffer[9]) - 30000) / 10;
-    SOC = (float)((this->my_rxBuffer[10] << 8) | this->my_rxBuffer[11]) / 10;
-
+    get.packCurrent = (float)(((this->my_rxBuffer[8] << 8) | this->my_rxBuffer[9]) - 30000) / 10;
+    get.packSOC = (float)((this->my_rxBuffer[10] << 8) | this->my_rxBuffer[11]) / 10;
     return true;
 }
 
-bool Daly_BMS_UART::getPackTemp(int8_t &temp)
+bool Daly_BMS_UART::getPackTemp()
 {
     this->sendCommand(COMMAND::MIN_MAX_TEMPERATURE);
 
     if (!this->receiveBytes())
     {
 #ifdef DALY_BMS_DEBUG
-        Serial.printf("<DALY-BMS DEBUG> Receive failed, Temp value won't be modified!\n");
+        Serial.print("<DALY-BMS DEBUG> Receive failed, Temp value won't be modified!\n");
 #endif
         return false;
     }
 
-    int8_t max_temp = (this->my_rxBuffer[4] - 40);
-    int8_t min_temp = (this->my_rxBuffer[6] - 40);
+    int8_t max_temp = (this->my_rxBuffer[4] - 40); //byte 0 from datasheet
+    int8_t min_temp = (this->my_rxBuffer[6] - 40); //byte 3 from datasheet
 
-    temp = (max_temp + min_temp) / 2;
+    get.tempAverage = (max_temp + min_temp) / 2;
 
     return true;
 }
 
-bool Daly_BMS_UART::getMinMaxCellVoltage(float &minCellV, uint8_t &minCellVNum, float &maxCellV, uint8_t &maxCellVNum)
+bool Daly_BMS_UART::getMinMaxCellVoltage()
 {
     this->sendCommand(COMMAND::MIN_MAX_CELL_VOLTAGE);
 
     if (!receiveBytes())
     {
 #ifdef DALY_BMS_DEBUG
-        Serial.printf("<DALY-BMS DEBUG> Receive failed, min/max cell values won't be modified!\n");
+        Serial.print("<DALY-BMS DEBUG> Receive failed, min/max cell values won't be modified!\n");
 #endif
         return false;
     }
 
-    maxCellV = (float)((this->my_rxBuffer[4] << 8) | this->my_rxBuffer[5]) / 1000; // Given in mV, convert to V
-    maxCellVNum = this->my_rxBuffer[6];
-    minCellV = (float)((this->my_rxBuffer[7] << 8) | this->my_rxBuffer[8]) / 1000; // Given in mV, convert to V
-    minCellVNum = this->my_rxBuffer[9];
+    get.maxCellmV = (float)((this->my_rxBuffer[4] << 8) | this->my_rxBuffer[5]); // Given in mV, convert to V
+    get.maxCellVNum = this->my_rxBuffer[6];
+    get.minCellmV = (float)((this->my_rxBuffer[7] << 8) | this->my_rxBuffer[8]); // Given in mV, convert to V
+    get.minCellVNum = this->my_rxBuffer[9];
 
+    return true;
+}
+bool Daly_BMS_UART::getStatusInfo()
+{
+    this->sendCommand(COMMAND::STATUS_INFO);
+
+    if (!receiveBytes())
+    {
+#ifdef DALY_BMS_DEBUG
+        Serial.print("<DALY-BMS DEBUG> Receive failed, min/max cell values won't be modified!\n");
+#endif
+        return false;
+    }
+    get.numberOfCells =     this->my_rxBuffer[4];
+    get.numOfTempSensors =  this->my_rxBuffer[5];
+    get.dischargeState =    this->my_rxBuffer[6];
+    get.chargeState =       this->my_rxBuffer[7];
+
+    for (size_t i = 0; i <= 8; i++)
+    {
+        get.dI[i] = bitRead(this->my_rxBuffer[8],i); //here must du some work, its a warning
+        Serial.println((String)bitRead(this->my_rxBuffer[8],i));
+    }
+    
     return true;
 }
 
@@ -165,7 +212,7 @@ bool Daly_BMS_UART::validateChecksum()
     }
 
 #ifdef DALY_BMS_DEBUG
-    Serial.printf("<DALY-BMS DEBUG> Calculated checksum: 0x%x, Received checksum: 0x%x\n", checksum, this->my_rxBuffer[XFER_BUFFER_LENGTH - 1]);
+    Serial.print("<DALY-BMS DEBUG> Calculated checksum: 0x"+(String)checksum+", Received checksum: 0x"+(String)this->my_rxBuffer[XFER_BUFFER_LENGTH - 1]+"\n");
 #endif
 
     // Compare the calculated checksum to the real checksum (the last received byte)
@@ -174,10 +221,10 @@ bool Daly_BMS_UART::validateChecksum()
 
 void Daly_BMS_UART::barfRXBuffer(void)
 {
-    Serial.printf("<DALY-BMS DEBUG> RX Buffer: [");
+    Serial.print("<DALY-BMS DEBUG> RX Buffer: [");
     for (int i = 0; i < XFER_BUFFER_LENGTH; i++)
     {
-        Serial.printf("0x%x,", this->my_rxBuffer[i]);
+        Serial.print("0x"+(String)this->my_rxBuffer[i]);
     }
-    Serial.printf("]\n");
+    Serial.print("]\n");
 }
