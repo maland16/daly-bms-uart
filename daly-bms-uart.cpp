@@ -49,7 +49,7 @@ bool Daly_BMS_UART::update()
     getPackTemp();
     getStatusInfo();
     //getCellVoltages(); //dont work, the answer string from bms is too long and must splitet, i have no idea
-   //getFailureCodes(); //coming soon
+   getFailureCodes(); //coming soon
 /**
  * put here the function call to recive all data one by one
  * check if cell number ar set and then ask for cell data
@@ -164,6 +164,82 @@ bool Daly_BMS_UART::getCellVoltages()
     {
         DEBUG_SERIAL.println(this->my_rxBuffer[i]);
     }
+    
+    return true;
+}
+
+bool Daly_BMS_UART::getFailureCodes()
+{
+    this->sendCommand(COMMAND::CELL_VOLTAGES);
+
+    if (!receiveBytes())
+    {
+#ifdef DALY_BMS_DEBUG
+        DEBUG_SERIAL.print("<DALY-BMS DEBUG> Receive failed, Failure Flags won't be modified!\n");
+#endif
+        return false;
+    }
+ /* 0x00 */
+    alarm.levelOneCellVoltageTooHigh =      bitRead(this->my_rxBuffer[4],0);
+    alarm.levelTwoCellVoltageTooHigh =      bitRead(this->my_rxBuffer[4],1);
+    alarm.levelOneCellVoltageTooLow =       bitRead(this->my_rxBuffer[4],2);
+    alarm.levelTwoCellVoltageTooLow =       bitRead(this->my_rxBuffer[4],3);
+    alarm.levelOnePackVoltageTooHigh =      bitRead(this->my_rxBuffer[4],4);
+    alarm.levelTwoPackVoltageTooHigh =      bitRead(this->my_rxBuffer[4],5);
+    alarm.levelOnePackVoltageTooLow =       bitRead(this->my_rxBuffer[4],6);
+    alarm.levelTwoPackVoltageTooLow =       bitRead(this->my_rxBuffer[4],7);
+
+    /* 0x01 */
+    alarm.levelOneChargeTempTooHigh =       bitRead(this->my_rxBuffer[5],1);
+    alarm.levelTwoChargeTempTooHigh =       bitRead(this->my_rxBuffer[5],1);
+    alarm.levelOneChargeTempTooLow =        bitRead(this->my_rxBuffer[5],1);
+    alarm.levelTwoChargeTempTooLow =        bitRead(this->my_rxBuffer[5],1);
+    alarm.levelOneDischargeTempTooHigh =    bitRead(this->my_rxBuffer[5],1);
+    alarm.levelTwoDischargeTempTooHigh =    bitRead(this->my_rxBuffer[5],1);
+    alarm.levelOneDischargeTempTooLow =     bitRead(this->my_rxBuffer[5],1);
+    alarm.levelTwoDischargeTempTooLow =     bitRead(this->my_rxBuffer[5],1);
+
+    /* 0x02 */
+    alarm.levelOneChargeCurrentTooHigh =    bitRead(this->my_rxBuffer[6],0);
+    alarm.levelTwoChargeCurrentTooHigh =    bitRead(this->my_rxBuffer[6],1);
+    alarm.levelOneDischargeCurrentTooHigh = bitRead(this->my_rxBuffer[6],2);
+    alarm.levelTwoDischargeCurrentTooHigh = bitRead(this->my_rxBuffer[6],3);
+    alarm.levelOneStateOfChargeTooHigh =    bitRead(this->my_rxBuffer[6],4);
+    alarm.levelTwoStateOfChargeTooHigh =    bitRead(this->my_rxBuffer[6],5);
+    alarm.levelOneStateOfChargeTooLow =     bitRead(this->my_rxBuffer[6],6);
+    alarm.levelTwoStateOfChargeTooLow =     bitRead(this->my_rxBuffer[6],7);
+
+    /* 0x03 */
+    alarm.levelOneCellVoltageDifferenceTooHigh = bitRead(this->my_rxBuffer[7],0);
+    alarm.levelTwoCellVoltageDifferenceTooHigh = bitRead(this->my_rxBuffer[7],1);
+    alarm.levelOneTempSensorDifferenceTooHigh =  bitRead(this->my_rxBuffer[7],2);
+    alarm.levelTwoTempSensorDifferenceTooHigh =  bitRead(this->my_rxBuffer[7],3);
+
+    /* 0x04 */
+    alarm.chargeFETTemperatureTooHigh =             bitRead(this->my_rxBuffer[8],0);
+    alarm.dischargeFETTemperatureTooHigh =          bitRead(this->my_rxBuffer[8],1);
+    alarm.failureOfChargeFETTemperatureSensor =     bitRead(this->my_rxBuffer[8],2);
+    alarm.failureOfDischargeFETTemperatureSensor =  bitRead(this->my_rxBuffer[8],3);
+    alarm.failureOfChargeFETAdhesion =              bitRead(this->my_rxBuffer[8],4);
+    alarm.failureOfDischargeFETAdhesion =           bitRead(this->my_rxBuffer[8],5);
+    alarm.failureOfChargeFETTBreaker =              bitRead(this->my_rxBuffer[8],6);
+    alarm.failureOfDischargeFETBreaker =            bitRead(this->my_rxBuffer[8],7);
+
+    /* 0x05 */
+    alarm.failureOfAFEAcquisitionModule =           bitRead(this->my_rxBuffer[9],0);
+    alarm.failureOfVoltageSensorModule =            bitRead(this->my_rxBuffer[9],1);
+    alarm.failureOfTemperatureSensorModule =        bitRead(this->my_rxBuffer[9],2);
+    alarm.failureOfEEPROMStorageModule =            bitRead(this->my_rxBuffer[9],3);
+    alarm.failureOfRealtimeClockModule =            bitRead(this->my_rxBuffer[9],4);
+    alarm.failureOfPrechargeModule =                bitRead(this->my_rxBuffer[9],5);
+    alarm.failureOfVehicleCommunicationModule =     bitRead(this->my_rxBuffer[9],6);
+    alarm.failureOfIntranetCommunicationModule =    bitRead(this->my_rxBuffer[9],7);
+
+    /* 0x06 */
+    alarm.failureOfCurrentSensorModule =        bitRead(this->my_rxBuffer[10],0);
+    alarm.failureOfMainVoltageSensorModule =    bitRead(this->my_rxBuffer[10],1);
+    alarm.failureOfShortCircuitProtection =     bitRead(this->my_rxBuffer[10],2);
+    alarm.failureOfLowVoltageNoCharging =       bitRead(this->my_rxBuffer[10],3);
     
     return true;
 }
