@@ -21,7 +21,6 @@ public:
         STATUS_INFO = 0x94,
         CELL_VOLTAGES = 0x95,
         FAILURE_CODES = 0x98,
-        COMMANDEND
     };
 //for testing
 struct
@@ -38,22 +37,21 @@ struct
     int minCellVNum; //Min Cell number
 
     //data from 0x92
-    int tempMax;
-    int tempMin;
-    int tempAverage;
+    float tempMax;
+    float tempMin;
+    float tempAverage;
 
     //data from 0x94
     int numberOfCells;      //amount of cells
-    int numOfTempSensors;   // amount of temp sensors
+    int numOfTempSensors;   //amount of temp sensors
     bool chargeState;       //charger status 0=disconnected 1=connected
     bool dischargeState;    //Load Status 0=disconnected 1=connected
-    bool dI[8];
+    bool dIO[8];            //No information about this
+    int bmsCycles;          //charge / discharge cycles
 
     //data from 0x95
     int cellNum[48];
     int cellVmV[48];
-    //data from...
-    int disChargeFet;
 }get;
 struct
 {
@@ -112,6 +110,11 @@ struct
      * 
      */
     bool getStatusInfo();
+    /**
+     * @brief 
+     * 
+     */
+    bool getCellVoltages();
 private:
     /**
      * @brief Sends a complete packet with the specified command
