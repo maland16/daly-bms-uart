@@ -29,9 +29,8 @@ void loop() {
   DEBUG_SERIAL.println("Number of Cells: "+(String)bms.get.numberOfCells);
   DEBUG_SERIAL.println("Numver of Temp Sensors: "+(String)bms.get.numOfTempSensors);
   DEBUG_SERIAL.println("BMS Charge Discharge Cycles: "+(String)bms.get.bmsCycles);
- 
 
-//Serial.print("\r");
-  // Lets slow things down a bit...
-  //delay(500);
+  //for alarm flags - for all flags see the alarm struct in daly-bms-uart.h
+  DEBUG_SERIAL.println("Level one Cell voltage to High: "+(String)bms.alarm.levelOneCellVoltageTooHigh);
+
 }
