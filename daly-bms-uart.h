@@ -20,8 +20,58 @@ public:
         DISCHARGE_CHARGE_MOS_STATUS = 0x93,
         STATUS_INFO = 0x94,
         CELL_VOLTAGES = 0x95,
-        FAILURE_CODES = 0x98
+        FAILURE_CODES = 0x98,
+        COMMANDEND
     };
+//for testing
+struct
+{
+    //data from 0x90
+    float packVoltage;
+    float packCurrent;
+    float packSOC;
+    //data from 0x91
+
+    float maxCellmV; //given in mV
+    int maxCellVNum; //Max Cell number
+    float minCellmV; //Given in mV
+    int minCellVNum; //Min Cell number
+
+    //data from 0x92
+    int tempMax;
+    int tempMin;
+    int tempAverage;
+
+    //data from 0x94
+    int numberOfCells;      //amount of cells
+    int numOfTempSensors;   // amount of temp sensors
+    bool chargeState;       //charger status 0=disconnected 1=connected
+    bool dischargeState;    //Load Status 0=disconnected 1=connected
+    bool dI[8];
+
+    //data from 0x95
+    int cellNum[48];
+    int cellVmV[48];
+    //data from...
+    int disChargeFet;
+}get;
+struct
+{
+    bool disChargeFet;
+    bool chargeFet;
+}set;
+struct
+{
+      bool level1AlarmThresholdForHighPackVoltage_100mV;
+      bool level2AlarmThresholdForHighPackVoltage_100mV;
+      bool level1AlarmThresholdForLowPackVoltage_100mV;
+      bool level2AlarmThresholdForLowPackVoltage_100mV;
+
+      bool level1AlarmThresholdForHighChargeCurrent_100mA;
+      bool level2AlarmThresholdForHighChargeCurrent_100mA;
+      bool level1AlarmThresholdForHighDischargeCurrent_100mA;
+      bool level2AlarmThresholdForHighDischargeCurrent_100mA;
+}alarm;
 
     Daly_BMS_UART(HardwareSerial &serialIntf);
 
@@ -32,13 +82,15 @@ public:
     bool Init();
 
     /**
+     * send data to the bms and update the values
+     */
+    bool update();
+
+    /**
      * @brief Gets Voltage, Current, and SOC measurements from the BMS
-     * @param voltage returns voltage in volts with deci-volt precision
-     * @param current returns current in amps with deci-amp precision
-     * @param SOC returns state of charge out of 100% with tenth of percent precision
      * @return True on successful aquisition, false otherwise
      */
-    bool getPackMeasurements(float &voltage, float &current, float &SOC);
+    bool getPackMeasurements();
 
     /**
      * @brief Gets the pack temperature in degrees celsius
@@ -46,15 +98,20 @@ public:
      * min and max temperatures to get the returned value
      * @return True on successful aquisition, false otherwise
      */
-    bool getPackTemp(int8_t &temp);
+    bool getPackTemp();
 
     /**
      * @brief Returns the highest and lowest individual cell voltage, and which cell is highest/lowest
      * @details Voltages are returned as floats with milliVolt precision (3 decimal places)
      * @return True on successful aquisition, false otherwise
      */
-    bool getMinMaxCellVoltage(float &minCellV, uint8_t &minCellVNum, float &maxCellV, uint8_t &maxCellVNum);
+    bool getMinMaxCellVoltage();
 
+    /**
+     * @brief 
+     * 
+     */
+    bool getStatusInfo();
 private:
     /**
      * @brief Sends a complete packet with the specified command
