@@ -1,11 +1,10 @@
 #ifndef DALY_BMS_UART_H
 #define DALY_BMS_UART_H
 
-// Uncomment the below #define to enable debugging print statements.
-// NOTE: You must call Serial.being(<baud rate>) in your setup() for this to work
+#define XFER_BUFFER_LENGTH 13
+
 //#define DALY_BMS_DEBUG
 
-#define XFER_BUFFER_LENGTH 13
 
 class Daly_BMS_UART
 {
@@ -21,108 +20,120 @@ public:
         STATUS_INFO = 0x94,
         CELL_VOLTAGES = 0x95,
         FAILURE_CODES = 0x98,
+        DISCHRG_FET = 0xD9, //Switching off charge and discharge
+        BMS_RESET = 0x00,  //Reseting the BMS
     };
-//for testing
-struct
-{
-    //data from 0x90
-    float packVoltage;
-    float packCurrent;
-    float packSOC;
-    //data from 0x91
+    //for testing
+    struct
+    {
+        //data from 0x90
+        float packVoltage;          //pressure (0.1 V) 
+        float packCurrent;          //acquisition (0.1 V) 
+        float packSOC;              //State Of Charge
+        
+        //data from 0x91
+        float maxCellmV;            //maximum monomer voltage (mV) 
+        int maxCellVNum;            //Maximum Unit Voltage cell No.
+        float minCellmV;            //minimum monomer voltage (mV) 
+        int minCellVNum;            //Minimum Unit Voltage cell No.
 
-    float maxCellmV; //given in mV
-    int maxCellVNum; //Max Cell number
-    float minCellmV; //Given in mV
-    int minCellVNum; //Min Cell number
+        //data from 0x92
+        float tempMax;              // maximum monomer temperature (40 Offset,°C)
+        float tempMin;              //Maximum monomer temperature cell No.
+        float tempAverage;          //Avergae Temperature
 
-    //data from 0x92
-    float tempMax;
-    float tempMin;
-    float tempAverage;
+        //data from 0x93
+        int chargeDischargeStatus;  //charge/discharge status (0 stationary ,1 charged ,2 discharged)
+        bool chargeFetState;        //charging MOS tube status
+        bool disChargeFetState;     //discharge MOS tube state
+        int bmsHeartBeat;           //BMS life(0~255 cycles) 
+        int resCapacitymAh;         // residual capacity (mAH
 
-    //data from 0x94
-    int numberOfCells;      //amount of cells
-    int numOfTempSensors;   //amount of temp sensors
-    bool chargeState;       //charger status 0=disconnected 1=connected
-    bool dischargeState;    //Load Status 0=disconnected 1=connected
-    bool dIO[8];            //No information about this
-    int bmsCycles;          //charge / discharge cycles
+        //data from 0x94
+        int numberOfCells;          //amount of cells
+        int numOfTempSensors;       //amount of temp sensors
+        bool chargeState;           //charger status 0=disconnected 1=connected
+        bool loadState;             //Load Status 0=disconnected 1=connected
+        bool dIO[8];                //No information about this
+        int bmsCycles;              //charge / discharge cycles
+        
 
-    //data from 0x95
-    int cellNum[48];
-    int cellVmV[48];
-}get;
+        //data from 0x95
+        int cellNum[48];
+        int cellVmV[48];
+    } get;
+    /*
 struct
 {
     bool disChargeFet;
     bool chargeFet;
 }set;
-struct
-{
-    //data from 0x98
- /* 0x00 */
-    bool levelOneCellVoltageTooHigh;
-    bool levelTwoCellVoltageTooHigh;
-    bool levelOneCellVoltageTooLow;
-    bool levelTwoCellVoltageTooLow;
-    bool levelOnePackVoltageTooHigh;
-    bool levelTwoPackVoltageTooHigh;
-    bool levelOnePackVoltageTooLow;
-    bool levelTwoPackVoltageTooLow;
+*/
+    struct
+    {
+        //data from 0x98
+        /* 0x00 */
+        bool levelOneCellVoltageTooHigh;
+        bool levelTwoCellVoltageTooHigh;
+        bool levelOneCellVoltageTooLow;
+        bool levelTwoCellVoltageTooLow;
+        bool levelOnePackVoltageTooHigh;
+        bool levelTwoPackVoltageTooHigh;
+        bool levelOnePackVoltageTooLow;
+        bool levelTwoPackVoltageTooLow;
 
-    /* 0x01 */
-    bool levelOneChargeTempTooHigh;
-    bool levelTwoChargeTempTooHigh;
-    bool levelOneChargeTempTooLow;
-    bool levelTwoChargeTempTooLow;
-    bool levelOneDischargeTempTooHigh;
-    bool levelTwoDischargeTempTooHigh;
-    bool levelOneDischargeTempTooLow;
-    bool levelTwoDischargeTempTooLow;
+        /* 0x01 */
+        bool levelOneChargeTempTooHigh;
+        bool levelTwoChargeTempTooHigh;
+        bool levelOneChargeTempTooLow;
+        bool levelTwoChargeTempTooLow;
+        bool levelOneDischargeTempTooHigh;
+        bool levelTwoDischargeTempTooHigh;
+        bool levelOneDischargeTempTooLow;
+        bool levelTwoDischargeTempTooLow;
 
-    /* 0x02 */
-    bool levelOneChargeCurrentTooHigh;
-    bool levelTwoChargeCurrentTooHigh;
-    bool levelOneDischargeCurrentTooHigh;
-    bool levelTwoDischargeCurrentTooHigh;
-    bool levelOneStateOfChargeTooHigh;
-    bool levelTwoStateOfChargeTooHigh;
-    bool levelOneStateOfChargeTooLow;
-    bool levelTwoStateOfChargeTooLow;
+        /* 0x02 */
+        bool levelOneChargeCurrentTooHigh;
+        bool levelTwoChargeCurrentTooHigh;
+        bool levelOneDischargeCurrentTooHigh;
+        bool levelTwoDischargeCurrentTooHigh;
+        bool levelOneStateOfChargeTooHigh;
+        bool levelTwoStateOfChargeTooHigh;
+        bool levelOneStateOfChargeTooLow;
+        bool levelTwoStateOfChargeTooLow;
 
-    /* 0x03 */
-    bool levelOneCellVoltageDifferenceTooHigh;
-    bool levelTwoCellVoltageDifferenceTooHigh;
-    bool levelOneTempSensorDifferenceTooHigh;
-    bool levelTwoTempSensorDifferenceTooHigh;
+        /* 0x03 */
+        bool levelOneCellVoltageDifferenceTooHigh;
+        bool levelTwoCellVoltageDifferenceTooHigh;
+        bool levelOneTempSensorDifferenceTooHigh;
+        bool levelTwoTempSensorDifferenceTooHigh;
 
-    /* 0x04 */
-    bool chargeFETTemperatureTooHigh;
-    bool dischargeFETTemperatureTooHigh;
-    bool failureOfChargeFETTemperatureSensor;
-    bool failureOfDischargeFETTemperatureSensor;
-    bool failureOfChargeFETAdhesion;
-    bool failureOfDischargeFETAdhesion;
-    bool failureOfChargeFETTBreaker;
-    bool failureOfDischargeFETBreaker;
+        /* 0x04 */
+        bool chargeFETTemperatureTooHigh;
+        bool dischargeFETTemperatureTooHigh;
+        bool failureOfChargeFETTemperatureSensor;
+        bool failureOfDischargeFETTemperatureSensor;
+        bool failureOfChargeFETAdhesion;
+        bool failureOfDischargeFETAdhesion;
+        bool failureOfChargeFETTBreaker;
+        bool failureOfDischargeFETBreaker;
 
-    /* 0x05 */
-    bool failureOfAFEAcquisitionModule;
-    bool failureOfVoltageSensorModule;
-    bool failureOfTemperatureSensorModule;
-    bool failureOfEEPROMStorageModule;
-    bool failureOfRealtimeClockModule;
-    bool failureOfPrechargeModule;
-    bool failureOfVehicleCommunicationModule;
-    bool failureOfIntranetCommunicationModule;
+        /* 0x05 */
+        bool failureOfAFEAcquisitionModule;
+        bool failureOfVoltageSensorModule;
+        bool failureOfTemperatureSensorModule;
+        bool failureOfEEPROMStorageModule;
+        bool failureOfRealtimeClockModule;
+        bool failureOfPrechargeModule;
+        bool failureOfVehicleCommunicationModule;
+        bool failureOfIntranetCommunicationModule;
 
-    /* 0x06 */
-    bool failureOfCurrentSensorModule;
-    bool failureOfMainVoltageSensorModule;
-    bool failureOfShortCircuitProtection;
-    bool failureOfLowVoltageNoCharging;
-}alarm;
+        /* 0x06 */
+        bool failureOfCurrentSensorModule;
+        bool failureOfMainVoltageSensorModule;
+        bool failureOfShortCircuitProtection;
+        bool failureOfLowVoltageNoCharging;
+    } alarm;
 
     Daly_BMS_UART(HardwareSerial &serialIntf);
 
@@ -159,20 +170,40 @@ struct
     bool getMinMaxCellVoltage();
 
     /**
-     * @brief 
+     * @brief
      * 
      */
     bool getStatusInfo();
+
     /**
      * @brief 
      * 
      */
     bool getCellVoltages();
+
     /**
      * @brief 
      * 
      */
     bool getFailureCodes();
+
+    /**
+     * @brief 
+     * 
+     */
+    bool setMOSGate (bool sw);
+
+    /**
+     * @brief 
+     * 
+     */
+    bool getDischargeChargeMosStatus();
+
+    /**
+     * @brief 
+     * 
+     */
+    bool setBmsReset();
 private:
     /**
      * @brief Sends a complete packet with the specified command
