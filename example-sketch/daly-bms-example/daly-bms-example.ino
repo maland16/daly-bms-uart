@@ -40,6 +40,7 @@ void loop()
   DEBUG_SERIAL.println("BMS HEartbeat:               " + (String)bms.get.bmsHeartBeat); //cycle 0-255
   DEBUG_SERIAL.println("Discharge MOSFet Status:     " + (String)bms.get.disChargeFetState);
   DEBUG_SERIAL.println("Charge MOSFet Status:        " + (String)bms.get.chargeFetState);
+  DEBUG_SERIAL.println("Remaining Capacity Ah:       " + (String)bms.get.resCapacitymAh);
 
   //for alarm flags - for all flags see the alarm struct in daly-bms-uart.h
   DEBUG_SERIAL.println("Level one Cell V to High:    " + (String)bms.alarm.levelOneCellVoltageTooHigh);
@@ -49,6 +50,25 @@ void loop()
  * bms.setBmsReset(); //Reseting the BMS, after reboot the MOS Gates are enabled!
  * bms.SetMOSGate(true); Switches on the charge and discharge Gate
  * bms.setMOSGate(false); Switches off the charge and discharge Gate
- */ 
+ */
+  
+
+  
+/*
+  //Sample to switch on and off the MOS Gates function
+  unsigned long currentMillis = millis();
+  if (currentMillis - previousMillis >= interval)
+  {
+    previousMillis = currentMillis;
+    if (bms.get.disChargeFetState)
+    {
+      bms.setMOSGate(false);
+    }
+    else
+    {
+      bms.setMOSGate(true);
+    }
+  }
+  */
  
 }
