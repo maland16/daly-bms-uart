@@ -40,7 +40,7 @@ void loop()
   DEBUG_SERIAL.println("BMS HEartbeat:               " + (String)bms.get.bmsHeartBeat); //cycle 0-255
   DEBUG_SERIAL.println("Discharge MOSFet Status:     " + (String)bms.get.disChargeFetState);
   DEBUG_SERIAL.println("Charge MOSFet Status:        " + (String)bms.get.chargeFetState);
-  DEBUG_SERIAL.println("Remaining Capacity mAh:       " + (String)bms.get.resCapacitymAh);
+  DEBUG_SERIAL.println("Remaining Capacity mAh:      " + (String)bms.get.resCapacitymAh);
 
   //for alarm flags - for all flags see the alarm struct in daly-bms-uart.h
   DEBUG_SERIAL.println("Level one Cell V to High:    " + (String)bms.alarm.levelOneCellVoltageTooHigh);
