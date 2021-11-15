@@ -1,6 +1,5 @@
 #include "Arduino.h"
 #include "daly-bms-uart.h"
-#define DALY_BMS_DEBUG
 #define DEBUG_SERIAL Serial
 
 //----------------------------------------------------------------------
@@ -44,13 +43,14 @@ bool Daly_BMS_UART::Init()
 bool Daly_BMS_UART::update()
 {
 
-    getPackMeasurements();
-    getMinMaxCellVoltage();
-    getPackTemp();
-    getStatusInfo();
-    //getCellVoltages(); //dont work, the answer string from bms is too long and must splitet, i have no idea
-   getFailureCodes(); //coming soon
-/**
+    getPackMeasurements(); //0x90
+    getMinMaxCellVoltage(); //0x91
+    getPackTemp();  //0x92
+    getDischargeChargeMosStatus(); //0x93
+    getStatusInfo(); //0x94
+    //getCellVoltages(); //dont work, the answer string from BMS is too long and must splitet
+    getFailureCodes(); //0x98
+    /**
  * put here the function call to recive all data one by one
  * check if cell number ar set and then ask for cell data
  * 
@@ -66,8 +66,7 @@ bool Daly_BMS_UART::update()
     return true;
 }
 
-
-bool Daly_BMS_UART::getPackMeasurements()
+bool Daly_BMS_UART::getPackMeasurements() //0x90
 {
     this->sendCommand(COMMAND::VOUT_IOUT_SOC);
 
@@ -86,26 +85,7 @@ bool Daly_BMS_UART::getPackMeasurements()
     return true;
 }
 
-bool Daly_BMS_UART::getPackTemp()
-{
-    this->sendCommand(COMMAND::MIN_MAX_TEMPERATURE);
-
-    if (!this->receiveBytes())
-    {
-#ifdef DALY_BMS_DEBUG
-        DEBUG_SERIAL.print("<DALY-BMS DEBUG> Receive failed, Temp value won't be modified!\n");
-#endif
-        return false;
-    }
-
-    uint8_t max_temp = (this->my_rxBuffer[4] - 40); //byte 0 from datasheet
-    uint8_t min_temp = (this->my_rxBuffer[6] - 40); //byte 3 from datasheet
-    get.tempAverage = (max_temp + min_temp) / 2;
-
-    return true;
-}
-
-bool Daly_BMS_UART::getMinMaxCellVoltage()
+bool Daly_BMS_UART::getMinMaxCellVoltage() //0x91
 {
     this->sendCommand(COMMAND::MIN_MAX_CELL_VOLTAGE);
 
@@ -124,7 +104,47 @@ bool Daly_BMS_UART::getMinMaxCellVoltage()
 
     return true;
 }
-bool Daly_BMS_UART::getStatusInfo()
+
+bool Daly_BMS_UART::getPackTemp() //0x92
+{
+    this->sendCommand(COMMAND::MIN_MAX_TEMPERATURE);
+
+    if (!this->receiveBytes())
+    {
+#ifdef DALY_BMS_DEBUG
+        DEBUG_SERIAL.print("<DALY-BMS DEBUG> Receive failed, Temp value won't be modified!\n");
+#endif
+        return false;
+    }
+
+    uint8_t max_temp = (this->my_rxBuffer[4] - 40); //byte 0 from datasheet
+    uint8_t min_temp = (this->my_rxBuffer[6] - 40); //byte 3 from datasheet
+    get.tempAverage = (max_temp + min_temp) / 2;
+
+    return true;
+}
+
+bool Daly_BMS_UART::getDischargeChargeMosStatus() //0x93
+{
+    this->sendCommand(COMMAND::DISCHARGE_CHARGE_MOS_STATUS); 
+
+    if (!receiveBytes())
+    {
+#ifdef DALY_BMS_DEBUG
+        DEBUG_SERIAL.print("<DALY-BMS DEBUG> Receive failed, Charge / discharge mos Status won't be modified!\n");
+#endif
+        return false;
+    }
+    get.chargeDischargeStatus = this->my_rxBuffer[4];
+    get.chargeFetState = this->my_rxBuffer[5];
+    get.disChargeFetState = this->my_rxBuffer[6];
+    get.bmsHeartBeat = this->my_rxBuffer[7];
+    get.resCapacitymAh = this->my_rxBuffer[8];
+
+    return true;
+}
+
+bool Daly_BMS_UART::getStatusInfo() //0x94
 {
     this->sendCommand(COMMAND::STATUS_INFO);
 
@@ -135,21 +155,21 @@ bool Daly_BMS_UART::getStatusInfo()
 #endif
         return false;
     }
-    get.numberOfCells =     this->my_rxBuffer[4];
-    get.numOfTempSensors =  this->my_rxBuffer[5];
-    get.dischargeState =    this->my_rxBuffer[6];
-    get.chargeState =       this->my_rxBuffer[7];
+    get.numberOfCells = this->my_rxBuffer[4];
+    get.numOfTempSensors = this->my_rxBuffer[5];
+    get.chargeState = this->my_rxBuffer[6];
+    get.loadState = this->my_rxBuffer[7];
 
     for (size_t i = 0; i < 8; i++)
     {
-        get.dIO[i] = bitRead(this->my_rxBuffer[8],i);
+        get.dIO[i] = bitRead(this->my_rxBuffer[8], i);
     }
     get.bmsCycles = this->my_rxBuffer[9];
-    
+
     return true;
 }
-
-bool Daly_BMS_UART::getCellVoltages()
+/* not working now, so disabled
+bool Daly_BMS_UART::getCellVoltages() //0x95
 {
     this->sendCommand(COMMAND::CELL_VOLTAGES);
 
@@ -164,13 +184,14 @@ bool Daly_BMS_UART::getCellVoltages()
     {
         DEBUG_SERIAL.println(this->my_rxBuffer[i]);
     }
-    
+
     return true;
 }
+*/
 
-bool Daly_BMS_UART::getFailureCodes()
+bool Daly_BMS_UART::getFailureCodes() //0x98
 {
-    this->sendCommand(COMMAND::CELL_VOLTAGES);
+    this->sendCommand(COMMAND::FAILURE_CODES);
 
     if (!receiveBytes())
     {
@@ -179,68 +200,118 @@ bool Daly_BMS_UART::getFailureCodes()
 #endif
         return false;
     }
- /* 0x00 */
-    alarm.levelOneCellVoltageTooHigh =      bitRead(this->my_rxBuffer[4],0);
-    alarm.levelTwoCellVoltageTooHigh =      bitRead(this->my_rxBuffer[4],1);
-    alarm.levelOneCellVoltageTooLow =       bitRead(this->my_rxBuffer[4],2);
-    alarm.levelTwoCellVoltageTooLow =       bitRead(this->my_rxBuffer[4],3);
-    alarm.levelOnePackVoltageTooHigh =      bitRead(this->my_rxBuffer[4],4);
-    alarm.levelTwoPackVoltageTooHigh =      bitRead(this->my_rxBuffer[4],5);
-    alarm.levelOnePackVoltageTooLow =       bitRead(this->my_rxBuffer[4],6);
-    alarm.levelTwoPackVoltageTooLow =       bitRead(this->my_rxBuffer[4],7);
+    /* 0x00 */
+    alarm.levelOneCellVoltageTooHigh = bitRead(this->my_rxBuffer[4], 0);
+    alarm.levelTwoCellVoltageTooHigh = bitRead(this->my_rxBuffer[4], 1);
+    alarm.levelOneCellVoltageTooLow = bitRead(this->my_rxBuffer[4], 2);
+    alarm.levelTwoCellVoltageTooLow = bitRead(this->my_rxBuffer[4], 3);
+    alarm.levelOnePackVoltageTooHigh = bitRead(this->my_rxBuffer[4], 4);
+    alarm.levelTwoPackVoltageTooHigh = bitRead(this->my_rxBuffer[4], 5);
+    alarm.levelOnePackVoltageTooLow = bitRead(this->my_rxBuffer[4], 6);
+    alarm.levelTwoPackVoltageTooLow = bitRead(this->my_rxBuffer[4], 7);
 
     /* 0x01 */
-    alarm.levelOneChargeTempTooHigh =       bitRead(this->my_rxBuffer[5],1);
-    alarm.levelTwoChargeTempTooHigh =       bitRead(this->my_rxBuffer[5],1);
-    alarm.levelOneChargeTempTooLow =        bitRead(this->my_rxBuffer[5],1);
-    alarm.levelTwoChargeTempTooLow =        bitRead(this->my_rxBuffer[5],1);
-    alarm.levelOneDischargeTempTooHigh =    bitRead(this->my_rxBuffer[5],1);
-    alarm.levelTwoDischargeTempTooHigh =    bitRead(this->my_rxBuffer[5],1);
-    alarm.levelOneDischargeTempTooLow =     bitRead(this->my_rxBuffer[5],1);
-    alarm.levelTwoDischargeTempTooLow =     bitRead(this->my_rxBuffer[5],1);
+    alarm.levelOneChargeTempTooHigh = bitRead(this->my_rxBuffer[5], 1);
+    alarm.levelTwoChargeTempTooHigh = bitRead(this->my_rxBuffer[5], 1);
+    alarm.levelOneChargeTempTooLow = bitRead(this->my_rxBuffer[5], 1);
+    alarm.levelTwoChargeTempTooLow = bitRead(this->my_rxBuffer[5], 1);
+    alarm.levelOneDischargeTempTooHigh = bitRead(this->my_rxBuffer[5], 1);
+    alarm.levelTwoDischargeTempTooHigh = bitRead(this->my_rxBuffer[5], 1);
+    alarm.levelOneDischargeTempTooLow = bitRead(this->my_rxBuffer[5], 1);
+    alarm.levelTwoDischargeTempTooLow = bitRead(this->my_rxBuffer[5], 1);
 
     /* 0x02 */
-    alarm.levelOneChargeCurrentTooHigh =    bitRead(this->my_rxBuffer[6],0);
-    alarm.levelTwoChargeCurrentTooHigh =    bitRead(this->my_rxBuffer[6],1);
-    alarm.levelOneDischargeCurrentTooHigh = bitRead(this->my_rxBuffer[6],2);
-    alarm.levelTwoDischargeCurrentTooHigh = bitRead(this->my_rxBuffer[6],3);
-    alarm.levelOneStateOfChargeTooHigh =    bitRead(this->my_rxBuffer[6],4);
-    alarm.levelTwoStateOfChargeTooHigh =    bitRead(this->my_rxBuffer[6],5);
-    alarm.levelOneStateOfChargeTooLow =     bitRead(this->my_rxBuffer[6],6);
-    alarm.levelTwoStateOfChargeTooLow =     bitRead(this->my_rxBuffer[6],7);
+    alarm.levelOneChargeCurrentTooHigh = bitRead(this->my_rxBuffer[6], 0);
+    alarm.levelTwoChargeCurrentTooHigh = bitRead(this->my_rxBuffer[6], 1);
+    alarm.levelOneDischargeCurrentTooHigh = bitRead(this->my_rxBuffer[6], 2);
+    alarm.levelTwoDischargeCurrentTooHigh = bitRead(this->my_rxBuffer[6], 3);
+    alarm.levelOneStateOfChargeTooHigh = bitRead(this->my_rxBuffer[6], 4);
+    alarm.levelTwoStateOfChargeTooHigh = bitRead(this->my_rxBuffer[6], 5);
+    alarm.levelOneStateOfChargeTooLow = bitRead(this->my_rxBuffer[6], 6);
+    alarm.levelTwoStateOfChargeTooLow = bitRead(this->my_rxBuffer[6], 7);
 
     /* 0x03 */
-    alarm.levelOneCellVoltageDifferenceTooHigh = bitRead(this->my_rxBuffer[7],0);
-    alarm.levelTwoCellVoltageDifferenceTooHigh = bitRead(this->my_rxBuffer[7],1);
-    alarm.levelOneTempSensorDifferenceTooHigh =  bitRead(this->my_rxBuffer[7],2);
-    alarm.levelTwoTempSensorDifferenceTooHigh =  bitRead(this->my_rxBuffer[7],3);
+    alarm.levelOneCellVoltageDifferenceTooHigh = bitRead(this->my_rxBuffer[7], 0);
+    alarm.levelTwoCellVoltageDifferenceTooHigh = bitRead(this->my_rxBuffer[7], 1);
+    alarm.levelOneTempSensorDifferenceTooHigh = bitRead(this->my_rxBuffer[7], 2);
+    alarm.levelTwoTempSensorDifferenceTooHigh = bitRead(this->my_rxBuffer[7], 3);
 
     /* 0x04 */
-    alarm.chargeFETTemperatureTooHigh =             bitRead(this->my_rxBuffer[8],0);
-    alarm.dischargeFETTemperatureTooHigh =          bitRead(this->my_rxBuffer[8],1);
-    alarm.failureOfChargeFETTemperatureSensor =     bitRead(this->my_rxBuffer[8],2);
-    alarm.failureOfDischargeFETTemperatureSensor =  bitRead(this->my_rxBuffer[8],3);
-    alarm.failureOfChargeFETAdhesion =              bitRead(this->my_rxBuffer[8],4);
-    alarm.failureOfDischargeFETAdhesion =           bitRead(this->my_rxBuffer[8],5);
-    alarm.failureOfChargeFETTBreaker =              bitRead(this->my_rxBuffer[8],6);
-    alarm.failureOfDischargeFETBreaker =            bitRead(this->my_rxBuffer[8],7);
+    alarm.chargeFETTemperatureTooHigh = bitRead(this->my_rxBuffer[8], 0);
+    alarm.dischargeFETTemperatureTooHigh = bitRead(this->my_rxBuffer[8], 1);
+    alarm.failureOfChargeFETTemperatureSensor = bitRead(this->my_rxBuffer[8], 2);
+    alarm.failureOfDischargeFETTemperatureSensor = bitRead(this->my_rxBuffer[8], 3);
+    alarm.failureOfChargeFETAdhesion = bitRead(this->my_rxBuffer[8], 4);
+    alarm.failureOfDischargeFETAdhesion = bitRead(this->my_rxBuffer[8], 5);
+    alarm.failureOfChargeFETTBreaker = bitRead(this->my_rxBuffer[8], 6);
+    alarm.failureOfDischargeFETBreaker = bitRead(this->my_rxBuffer[8], 7);
 
     /* 0x05 */
-    alarm.failureOfAFEAcquisitionModule =           bitRead(this->my_rxBuffer[9],0);
-    alarm.failureOfVoltageSensorModule =            bitRead(this->my_rxBuffer[9],1);
-    alarm.failureOfTemperatureSensorModule =        bitRead(this->my_rxBuffer[9],2);
-    alarm.failureOfEEPROMStorageModule =            bitRead(this->my_rxBuffer[9],3);
-    alarm.failureOfRealtimeClockModule =            bitRead(this->my_rxBuffer[9],4);
-    alarm.failureOfPrechargeModule =                bitRead(this->my_rxBuffer[9],5);
-    alarm.failureOfVehicleCommunicationModule =     bitRead(this->my_rxBuffer[9],6);
-    alarm.failureOfIntranetCommunicationModule =    bitRead(this->my_rxBuffer[9],7);
+    alarm.failureOfAFEAcquisitionModule = bitRead(this->my_rxBuffer[9], 0);
+    alarm.failureOfVoltageSensorModule = bitRead(this->my_rxBuffer[9], 1);
+    alarm.failureOfTemperatureSensorModule = bitRead(this->my_rxBuffer[9], 2);
+    alarm.failureOfEEPROMStorageModule = bitRead(this->my_rxBuffer[9], 3);
+    alarm.failureOfRealtimeClockModule = bitRead(this->my_rxBuffer[9], 4);
+    alarm.failureOfPrechargeModule = bitRead(this->my_rxBuffer[9], 5);
+    alarm.failureOfVehicleCommunicationModule = bitRead(this->my_rxBuffer[9], 6);
+    alarm.failureOfIntranetCommunicationModule = bitRead(this->my_rxBuffer[9], 7);
 
     /* 0x06 */
-    alarm.failureOfCurrentSensorModule =        bitRead(this->my_rxBuffer[10],0);
-    alarm.failureOfMainVoltageSensorModule =    bitRead(this->my_rxBuffer[10],1);
-    alarm.failureOfShortCircuitProtection =     bitRead(this->my_rxBuffer[10],2);
-    alarm.failureOfLowVoltageNoCharging =       bitRead(this->my_rxBuffer[10],3);
-    
+    alarm.failureOfCurrentSensorModule = bitRead(this->my_rxBuffer[10], 0);
+    alarm.failureOfMainVoltageSensorModule = bitRead(this->my_rxBuffer[10], 1);
+    alarm.failureOfShortCircuitProtection = bitRead(this->my_rxBuffer[10], 2);
+    alarm.failureOfLowVoltageNoCharging = bitRead(this->my_rxBuffer[10], 3);
+
+    return true;
+}
+
+bool Daly_BMS_UART::setMOSGate(bool sw) //0xD9 0x80 First Byte 0x01=ON 0x00=OFF
+{
+
+    /**
+     * it works
+     * but it must give a way to switch the charge and discharge gate seperate
+     */
+    if (sw == true)
+    {
+        #ifdef DALY_BMS_DEBUG
+        DEBUG_SERIAL.println("try switching discharge on");
+        #endif
+        this->my_txBuffer[4] = 0x01;
+        this->sendCommand(COMMAND::DISCHRG_FET);
+        this->my_txBuffer[4] = 0x00;
+    }
+
+    if (sw == false)
+    {
+        #ifdef DALY_BMS_DEBUG
+        DEBUG_SERIAL.println("try switching discharge off");
+        #endif
+        this->sendCommand(COMMAND::DISCHRG_FET);
+    }
+    if (!receiveBytes())
+    {
+#ifdef DALY_BMS_DEBUG
+        DEBUG_SERIAL.print("<DALY-BMS DEBUG> Send failed, Discharge FET won't be modified!\n");
+#endif
+        return false;
+    }
+
+    return true;
+}
+
+bool Daly_BMS_UART::setBmsReset() //0x00 Reset the BMS
+{
+        this->sendCommand(COMMAND::BMS_RESET);
+
+    if (!receiveBytes())
+    {
+#ifdef DALY_BMS_DEBUG
+        DEBUG_SERIAL.print("<DALY-BMS DEBUG> Send failed, Discharge FET won't be modified!\n");
+#endif
+        return false;
+    }
+
     return true;
 }
 
@@ -250,14 +321,14 @@ bool Daly_BMS_UART::getFailureCodes()
 
 void Daly_BMS_UART::sendCommand(COMMAND cmdID)
 {
+    uint8_t checksum = 0;
     this->my_txBuffer[2] = cmdID;
-
-    // We can cheat a little when calculating the CRC of the outgoing UART transmission beacause
-    // the only thing that changes in the outgoing buffer is the command, the rest stays the same.
-    // Checksum = sum of all bytes, truncated to an 8 bit integer. See the readme for more info.
-    // Checksum = (0xA5 + 0x80 + Command Num + 0x08) = (0x2D + Command Num)
-    uint8_t checksum = 0x2D + cmdID;
-
+    //Calculate the checksum
+    for (uint8_t i = 0; i <= 11; i++)
+    {
+        checksum += this->my_txBuffer[i];
+    }
+    //put it on the frame
     this->my_txBuffer[12] = checksum;
 
 #ifdef DALY_BMS_DEBUG
@@ -309,7 +380,7 @@ bool Daly_BMS_UART::validateChecksum()
     }
 
 #ifdef DALY_BMS_DEBUG
-    DEBUG_SERIAL.print("<DALY-BMS DEBUG> Calculated checksum: 0x"+(String)checksum+", Received checksum: 0x"+(String)this->my_rxBuffer[XFER_BUFFER_LENGTH - 1]+"\n");
+    DEBUG_SERIAL.print("<DALY-BMS DEBUG> Calculated checksum: 0x" + (String)checksum + ", Received checksum: 0x" + (String)this->my_rxBuffer[XFER_BUFFER_LENGTH - 1] + "\n");
 #endif
 
     // Compare the calculated checksum to the real checksum (the last received byte)
@@ -318,10 +389,12 @@ bool Daly_BMS_UART::validateChecksum()
 
 void Daly_BMS_UART::barfRXBuffer(void)
 {
+#ifdef DALY_BMS_DEBUG
     DEBUG_SERIAL.print("<DALY-BMS DEBUG> RX Buffer: [");
     for (int i = 0; i < XFER_BUFFER_LENGTH; i++)
     {
-        DEBUG_SERIAL.print("0x"+(String)this->my_rxBuffer[i]);
+        DEBUG_SERIAL.print("0x" + (String)this->my_rxBuffer[i]);
     }
     DEBUG_SERIAL.print("]\n");
+#endif
 }
