@@ -1,6 +1,6 @@
 #include "Arduino.h"
 #include "daly-bms-uart.h"
-#define DEBUG_SERIAL Serial
+//#define DEBUG_SERIAL Serial
 
 //----------------------------------------------------------------------
 // Public Functions
@@ -139,7 +139,7 @@ bool Daly_BMS_UART::getDischargeChargeMosStatus() //0x93
     get.chargeFetState = this->my_rxBuffer[5];
     get.disChargeFetState = this->my_rxBuffer[6];
     get.bmsHeartBeat = this->my_rxBuffer[7];
-    get.resCapacitymAh = this->my_rxBuffer[8];
+    get.resCapacitymAh = ((uint32_t)my_rxBuffer[8] << 0x18) | ((uint32_t)my_rxBuffer[9] << 0x10) | ((uint32_t)my_rxBuffer[10] << 0x08) | (int)my_rxBuffer[11];
 
     return true;
 }
@@ -164,7 +164,7 @@ bool Daly_BMS_UART::getStatusInfo() //0x94
     {
         get.dIO[i] = bitRead(this->my_rxBuffer[8], i);
     }
-    get.bmsCycles = this->my_rxBuffer[9];
+    get.bmsCycles = ((uint16_t)my_rxBuffer[9] << 0x08) | (uint16_t)my_rxBuffer[10];
 
     return true;
 }
