@@ -1,6 +1,9 @@
 #include "Arduino.h"
 #include "daly-bms-uart.h"
-//#define DEBUG_SERIAL Serial
+//for debuggin
+#define DALY_BMS_DEBUG
+#define DEBUG_SERIAL Serial
+
 
 //----------------------------------------------------------------------
 // Public Functions
@@ -97,9 +100,9 @@ bool Daly_BMS_UART::getMinMaxCellVoltage() //0x91
         return false;
     }
 
-    get.maxCellmV = (float)((this->my_rxBuffer[4] << 8) | this->my_rxBuffer[5]); // Given in mV, convert to V
+    get.maxCellmV = (float)((this->my_rxBuffer[4] << 8) | this->my_rxBuffer[5]);
     get.maxCellVNum = this->my_rxBuffer[6];
-    get.minCellmV = (float)((this->my_rxBuffer[7] << 8) | this->my_rxBuffer[8]); // Given in mV, convert to V
+    get.minCellmV = (float)((this->my_rxBuffer[7] << 8) | this->my_rxBuffer[8]);
     get.minCellVNum = this->my_rxBuffer[9];
 
     return true;
@@ -139,7 +142,7 @@ bool Daly_BMS_UART::getDischargeChargeMosStatus() //0x93
     get.chargeFetState = this->my_rxBuffer[5];
     get.disChargeFetState = this->my_rxBuffer[6];
     get.bmsHeartBeat = this->my_rxBuffer[7];
-    get.resCapacitymAh = ((uint32_t)my_rxBuffer[8] << 0x18) | ((uint32_t)my_rxBuffer[9] << 0x10) | ((uint32_t)my_rxBuffer[10] << 0x08) | (int)my_rxBuffer[11];
+    get.resCapacitymAh = ((uint32_t)my_rxBuffer[8] << 0x18) | ((uint32_t)my_rxBuffer[9] << 0x10) | ((uint32_t)my_rxBuffer[10] << 0x08) | (uint32_t)my_rxBuffer[11];
 
     return true;
 }
@@ -282,7 +285,7 @@ bool Daly_BMS_UART::setMOSGate(bool sw) //0xD9 0x80 First Byte 0x01=ON 0x00=OFF
         this->my_txBuffer[4] = 0x00;
     }
 
-    if (sw == false)
+    else
     {
         #ifdef DALY_BMS_DEBUG
         DEBUG_SERIAL.println("try switching discharge off");
@@ -292,7 +295,7 @@ bool Daly_BMS_UART::setMOSGate(bool sw) //0xD9 0x80 First Byte 0x01=ON 0x00=OFF
     if (!receiveBytes())
     {
 #ifdef DALY_BMS_DEBUG
-        DEBUG_SERIAL.print("<DALY-BMS DEBUG> Send failed, Discharge FET won't be modified!\n");
+        DEBUG_SERIAL.print("<DALY-BMS DEBUG> No response from BMS! Can't verify reset occurred.\n");
 #endif
         return false;
     }
@@ -380,7 +383,7 @@ bool Daly_BMS_UART::validateChecksum()
     }
 
 #ifdef DALY_BMS_DEBUG
-    DEBUG_SERIAL.print("<DALY-BMS DEBUG> Calculated checksum: 0x" + (String)checksum + ", Received checksum: 0x" + (String)this->my_rxBuffer[XFER_BUFFER_LENGTH - 1] + "\n");
+    DEBUG_SERIAL.print("<DALY-BMS DEBUG> Calculated checksum: " + (String)checksum + ", Received checksum: " + (String)this->my_rxBuffer[XFER_BUFFER_LENGTH - 1] + "\n");
 #endif
 
     // Compare the calculated checksum to the real checksum (the last received byte)

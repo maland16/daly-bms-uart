@@ -3,9 +3,6 @@
 
 #define XFER_BUFFER_LENGTH 13
 
-//#define DALY_BMS_DEBUG
-
-
 class Daly_BMS_UART
 {
 public:
@@ -23,7 +20,6 @@ public:
         DISCHRG_FET = 0xD9, //Switching off charge and discharge
         BMS_RESET = 0x00,  //Reseting the BMS
     };
-    //for testing
     struct
     {
         //data from 0x90
@@ -47,7 +43,7 @@ public:
         bool chargeFetState;        //charging MOS tube status
         bool disChargeFetState;     //discharge MOS tube state
         int bmsHeartBeat;           //BMS life(0~255 cycles) 
-        int resCapacitymAh;    //residual capacity mAH
+        int resCapacitymAh;         //residual capacity mAH
 
         //data from 0x94
         int numberOfCells;          //amount of cells
