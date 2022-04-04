@@ -1,8 +1,8 @@
 #include "Arduino.h"
 #include "daly-bms-uart.h"
 //for debuggin
-#define DALY_BMS_DEBUG
-#define DEBUG_SERIAL Serial
+//#define DALY_BMS_DEBUG
+#define DEBUG_SERIAL Serial1
 
 
 //----------------------------------------------------------------------
@@ -30,7 +30,7 @@ bool Daly_BMS_UART::Init()
 
     // Set up the output buffer with some values that won't be changing
     this->my_txBuffer[0] = 0xA5; // Start byte
-    this->my_txBuffer[1] = 0x80; // Host address
+    this->my_txBuffer[1] = 0x40; // Host address
     // this->my_txBuffer[2] is where our command ID goes
     this->my_txBuffer[3] = 0x08; // Length?
 
@@ -51,21 +51,13 @@ bool Daly_BMS_UART::update()
     getPackTemp();  //0x92
     getDischargeChargeMosStatus(); //0x93
     getStatusInfo(); //0x94
-    //getCellVoltages(); //dont work, the answer string from BMS is too long and must splitet
+    //getCellVoltages(); //0x95 dont work, the answer string from BMS is too long and must splitet
     getFailureCodes(); //0x98
     /**
  * put here the function call to recive all data one by one
  * check if cell number ar set and then ask for cell data
  * 
  */
-
-    if (!this->receiveBytes())
-    {
-#ifdef DALY_BMS_DEBUG
-        DEBUG_SERIAL.print("Updating the Data Failed\n");
-#endif
-        return false;
-    }
     return true;
 }
 
@@ -171,10 +163,12 @@ bool Daly_BMS_UART::getStatusInfo() //0x94
 
     return true;
 }
-/* not working now, so disabled
+
 bool Daly_BMS_UART::getCellVoltages() //0x95
 {
     this->sendCommand(COMMAND::CELL_VOLTAGES);
+
+    for (size_t i = 0; i < 16; i++){
 
     if (!receiveBytes())
     {
@@ -183,14 +177,24 @@ bool Daly_BMS_UART::getCellVoltages() //0x95
 #endif
         return false;
     }
-    for (size_t i = 4; i < 9; i++)
+
+   //////////// for (size_t i = 4; i < 9; i++)
+    //{
+       // DEBUG_SERIAL.print(this->my_rxBuffer[i]);
+    //}
+    DEBUG_SERIAL.print(i+" <DALY-BMS DEBUG> RX Buffer: [");
+    for (int j = 0; j < XFER_BUFFER_LENGTH; j++)
     {
-        DEBUG_SERIAL.println(this->my_rxBuffer[i]);
+        DEBUG_SERIAL.print("0x" + (String)this->my_rxBuffer[j]);
+    }
+    DEBUG_SERIAL.print("]\n");
+
+        //DEBUG_SERIAL.println("0x"+(String)this->my_rxBuffer[0]);
+
     }
 
     return true;
 }
-*/
 
 bool Daly_BMS_UART::getFailureCodes() //0x98
 {
@@ -268,13 +272,8 @@ bool Daly_BMS_UART::getFailureCodes() //0x98
     return true;
 }
 
-bool Daly_BMS_UART::setMOSGate(bool sw) //0xD9 0x80 First Byte 0x01=ON 0x00=OFF
+bool Daly_BMS_UART::setDischargeMOS(bool sw) //0xD9 0x80 First Byte 0x01=ON 0x00=OFF
 {
-
-    /**
-     * it works
-     * but it must give a way to switch the charge and discharge gate seperate
-     */
     if (sw == true)
     {
         #ifdef DALY_BMS_DEBUG
@@ -291,6 +290,36 @@ bool Daly_BMS_UART::setMOSGate(bool sw) //0xD9 0x80 First Byte 0x01=ON 0x00=OFF
         DEBUG_SERIAL.println("try switching discharge off");
         #endif
         this->sendCommand(COMMAND::DISCHRG_FET);
+    }
+    if (!receiveBytes())
+    {
+#ifdef DALY_BMS_DEBUG
+        DEBUG_SERIAL.print("<DALY-BMS DEBUG> No response from BMS! Can't verify reset occurred.\n");
+#endif
+        return false;
+    }
+
+    return true;
+}
+
+bool Daly_BMS_UART::setChargeMOS(bool sw) //0xDA 0x80 First Byte 0x01=ON 0x00=OFF 
+{
+    if (sw == true)
+    {
+        #ifdef DALY_BMS_DEBUG
+        DEBUG_SERIAL.println("try switching discharge on");
+        #endif
+        this->my_txBuffer[4] = 0x01;
+        this->sendCommand(COMMAND::CHRG_FET);
+        this->my_txBuffer[4] = 0x00;
+    }
+
+    else
+    {
+        #ifdef DALY_BMS_DEBUG
+        DEBUG_SERIAL.println("try switching discharge off");
+        #endif
+        this->sendCommand(COMMAND::CHRG_FET);
     }
     if (!receiveBytes())
     {

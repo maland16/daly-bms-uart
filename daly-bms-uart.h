@@ -17,7 +17,8 @@ public:
         STATUS_INFO = 0x94,
         CELL_VOLTAGES = 0x95,
         FAILURE_CODES = 0x98,
-        DISCHRG_FET = 0xD9, //Switching off charge and discharge
+        DISCHRG_FET = 0xD9,
+        CHRG_FET = 0xDA,
         BMS_RESET = 0x00,  //Reseting the BMS
     };
     struct
@@ -58,13 +59,7 @@ public:
         int cellNum[48];
         int cellVmV[48];
     } get;
-    /*
-struct
-{
-    bool disChargeFet;
-    bool chargeFet;
-}set;
-*/
+
     struct
     {
         //data from 0x98
@@ -166,37 +161,43 @@ struct
     bool getMinMaxCellVoltage();
 
     /**
-     * @brief
+     * @brief Get the general Status Info
      * 
      */
     bool getStatusInfo();
 
     /**
-     * @brief 
+     * @brief Get Cell Voltages
      * 
      */
     bool getCellVoltages();
 
     /**
-     * @brief 
+     * @brief Get the Failure Codes
      * 
      */
     bool getFailureCodes();
 
     /**
      * @brief 
-     * 
+     * set the Discharging MOS State
      */
-    bool setMOSGate (bool sw);
+    bool setDischargeMOS (bool sw);
 
     /**
-     * @brief 
+     * @brief set the Charging MOS State
+     * 
+     */
+    bool setChargeMOS (bool sw);
+
+    /**
+     * @brief Read the charge and discharge MOS States
      * 
      */
     bool getDischargeChargeMosStatus();
 
     /**
-     * @brief 
+     * @brief Reseting The BMS
      * 
      */
     bool setBmsReset();

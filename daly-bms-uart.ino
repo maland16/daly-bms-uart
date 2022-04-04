@@ -2,18 +2,13 @@
 
 #include <daly-bms-uart.h> // This is where the library gets pulled in
 
-#define BMS_SERIAL Serial1  //Set the serial port for communication with the Daly BMS
+#define BMS_SERIAL Serial  //Set the serial port for communication with the Daly BMS
 
 
 // NOTE: You must define and call DEBUG_SERIAL.begin(<baud rate>) in your setup() for this to work
-#define DEBUG_SERIAL Serial //Set the Serial Debug port
+#define DEBUG_SERIAL Serial1 //Set the Serial Debug port
 #define DALY_BMS_DEBUG // Uncomment the below #define to enable debugging print statements.
 
-
-
-//for testing, remove when working
-unsigned long previousMillis = 0;
-const long interval = 5000;
 
 // Constructing the bms driver and passing in the Serial interface (which pins to use)
 Daly_BMS_UART bms(BMS_SERIAL);
@@ -51,27 +46,10 @@ void loop()
 /**
  * Advanced functions:
  * bms.setBmsReset(); //Reseting the BMS, after reboot the MOS Gates are enabled!
- * bms.SetMOSGate(true); Switches on the charge and discharge Gate
- * bms.setMOSGate(false); Switches off the charge and discharge Gate
+ * bms.setDischargeMOS(true); Switches on the discharge Gate
+ * bms.setDischargeMOS(false); Switches off thedischarge Gate
+ * bms.setChargeMOS(true); Switches on the charge Gate
+ * bms.setChargeMOS(false); Switches off the charge Gate
  */
-  
-
-  
-/*
-  //Sample to switch on and off the MOS Gates function
-  unsigned long currentMillis = millis();
-  if (currentMillis - previousMillis >= interval)
-  {
-    previousMillis = currentMillis;
-    if (bms.get.disChargeFetState)
-    {
-      bms.setMOSGate(false);
-    }
-    else
-    {
-      bms.setMOSGate(true);
-    }
-  }
-  */
  
 }
