@@ -56,8 +56,7 @@ public:
         
 
         //data from 0x95
-        int cellNum[48];
-        int cellVmV[48];
+        float cellVmV[48];
     } get;
 
     struct

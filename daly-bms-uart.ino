@@ -40,6 +40,11 @@ void loop()
   DEBUG_SERIAL.println("Charge MOSFet Status:        " + (String)bms.get.chargeFetState);
   DEBUG_SERIAL.println("Remaining Capacity mAh:      " + (String)bms.get.resCapacitymAh);
 
+    for (size_t i = 0; i < size_t(bms.get.numberOfCells); i++)
+  {
+    DEBUG_SERIAL.println("Remaining Capacity mAh:      " + (String)bms.get.cellVmV[i]);
+  }
+
   //for alarm flags - for all flags see the alarm struct in daly-bms-uart.h and refer to the datasheet
   DEBUG_SERIAL.println("Level one Cell V to High:    " + (String)bms.alarm.levelOneCellVoltageTooHigh);
 
