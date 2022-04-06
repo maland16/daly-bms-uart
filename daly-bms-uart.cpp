@@ -259,6 +259,7 @@ bool Daly_BMS_UART::getCellTemperature() // 0x96
 bool Daly_BMS_UART::getCellBalanceState() // 0x97
 {
     int cellBalance = 0;
+    int cellBit = 0;
 
     if (get.numberOfCells > 1 && get.numberOfCells <= 48)
     {
@@ -272,15 +273,16 @@ bool Daly_BMS_UART::getCellBalanceState() // 0x97
             return false;
         }
 
-        for (size_t i = 0; i < 8; i++)
+        for (size_t i = 0; i < 6; i++)
         {
             for (size_t j = 0; j < 8; j++)
             {
-                get.cellBalanceState[j + i] = bitRead(this->my_rxBuffer[i + 4], j);
-                if (bitRead(this->my_rxBuffer[i + 4], j))
+                get.cellBalanceState[cellBit] = bitRead(this->my_rxBuffer[(i + 4)], j);
+                cellBit++;
+                if (bitRead(this->my_rxBuffer[(i + 4)], j))
                     cellBalance++;
 #ifdef DALY_BMS_DEBUG
-                DEBUG_SERIAL.print((String)bitRead(this->my_rxBuffer[i + 4], j));
+                DEBUG_SERIAL.print((String)bitRead(this->my_rxBuffer[(i + 4)], j));
 #endif
             }
         }
