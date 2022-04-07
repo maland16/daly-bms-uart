@@ -93,6 +93,7 @@ bool Daly_BMS_UART::getMinMaxCellVoltage() // 0x91
     get.maxCellVNum = this->my_rxBuffer[6];
     get.minCellmV = (float)((this->my_rxBuffer[7] << 8) | this->my_rxBuffer[8]);
     get.minCellVNum = this->my_rxBuffer[9];
+    get.cellDiff = (get.maxCellmV - get.minCellmV);
 
     return true;
 }
