@@ -2,28 +2,24 @@
 
 #include <daly-bms-uart.h> // This is where the library gets pulled in
 
-#define BMS_SERIAL Serial  //Set the serial port for communication with the Daly BMS
-
+#define BMS_SERIAL Serial // Set the serial port for communication with the Daly BMS
 
 // NOTE: You must define and call DEBUG_SERIAL.begin(<baud rate>) in your setup() for this to work
-#define DEBUG_SERIAL Serial1 //Set the Serial Debug port
-#define DALY_BMS_DEBUG // Uncomment the below #define to enable debugging print statements.
+#define DEBUG_SERIAL Serial1 // Set the Serial Debug port
+#define DALY_BMS_DEBUG       // Uncomment the below #define to enable debugging print statements.
 
-
-// Constructing the bms driver and passing in the Serial interface (which pins to use)
+// Construct the BMS driver and passing in the Serial interface (which pins to use)
 Daly_BMS_UART bms(BMS_SERIAL);
+
 void setup()
 {
-  // This is needed to print stuff to the serial monitor
-  DEBUG_SERIAL.begin(9600);
+  DEBUG_SERIAL.begin(9600); // Serial interface for the Arduino Serial Monitor
 
-  // This call sets up the driver
-  bms.Init();
+  bms.Init(); // This call sets up the driver
 }
 
 void loop()
 {
-
   // call to update the data from the bms
   bms.update();
 
@@ -35,27 +31,26 @@ void loop()
   DEBUG_SERIAL.println("Number of Cells:             " + (String)bms.get.numberOfCells);
   DEBUG_SERIAL.println("Number of Temp Sensors:      " + (String)bms.get.numOfTempSensors);
   DEBUG_SERIAL.println("BMS Chrg / Dischrg Cycles:   " + (String)bms.get.bmsCycles);
-  DEBUG_SERIAL.println("BMS HEartbeat:               " + (String)bms.get.bmsHeartBeat); //cycle 0-255
+  DEBUG_SERIAL.println("BMS HEartbeat:               " + (String)bms.get.bmsHeartBeat); // cycle 0-255
   DEBUG_SERIAL.println("Discharge MOSFet Status:     " + (String)bms.get.disChargeFetState);
   DEBUG_SERIAL.println("Charge MOSFet Status:        " + (String)bms.get.chargeFetState);
   DEBUG_SERIAL.println("Remaining Capacity mAh:      " + (String)bms.get.resCapacitymAh);
   //... any many many more data
 
-    for (size_t i = 0; i < size_t(bms.get.numberOfCells); i++)
+  for (size_t i = 0; i < size_t(bms.get.numberOfCells); i++)
   {
     DEBUG_SERIAL.println("Remaining Capacity mAh:      " + (String)bms.get.cellVmV[i]);
   }
 
-  //for alarm flags - for all flags see the alarm struct in daly-bms-uart.h and refer to the datasheet
+  // for alarm flags - for all flags see the alarm struct in daly-bms-uart.h and refer to the datasheet
   DEBUG_SERIAL.println("Level one Cell V to High:    " + (String)bms.alarm.levelOneCellVoltageTooHigh);
 
-/**
- * Advanced functions:
- * bms.setBmsReset(); //Reseting the BMS, after reboot the MOS Gates are enabled!
- * bms.setDischargeMOS(true); Switches on the discharge Gate
- * bms.setDischargeMOS(false); Switches off thedischarge Gate
- * bms.setChargeMOS(true); Switches on the charge Gate
- * bms.setChargeMOS(false); Switches off the charge Gate
- */
- 
+  /**
+   * Advanced functions:
+   * bms.setBmsReset(); //Reseting the BMS, after reboot the MOS Gates are enabled!
+   * bms.setDischargeMOS(true); Switches on the discharge Gate
+   * bms.setDischargeMOS(false); Switches off thedischarge Gate
+   * bms.setChargeMOS(true); Switches on the charge Gate
+   * bms.setChargeMOS(false); Switches off the charge Gate
+   */
 }

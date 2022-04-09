@@ -211,6 +211,7 @@ bool Daly_BMS_UART::getCellVoltages() // 0x95
     }
     else
     {
+        // Our number of cells isn't valid, return false
         return false;
     }
 }
