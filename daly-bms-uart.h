@@ -3,7 +3,7 @@
 
 // Uncomment the below #define to enable debugging print statements.
 // NOTE: You must call Serial.being(<baud rate>) in your setup() for this to work
-//#define DALY_BMS_DEBUG
+// #define DALY_BMS_DEBUG
 
 #define XFER_BUFFER_LENGTH 13
 
@@ -42,7 +42,7 @@ public:
 
     /**
      * @brief Gets the pack temperature in degrees celsius
-     * @details This function uses the MIN_MAX_TEMPERATURE command, and averages the 
+     * @details This function uses the MIN_MAX_TEMPERATURE command, and averages the
      * min and max temperatures to get the returned value
      * @return True on successful aquisition, false otherwise
      */
@@ -63,7 +63,7 @@ private:
     void sendCommand(COMMAND cmdID);
 
     /**
-     * @brief 
+     * @brief
      * @details
      * @return True on success, false on failure
      */
