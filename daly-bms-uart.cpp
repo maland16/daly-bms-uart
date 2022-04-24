@@ -96,19 +96,6 @@ bool Daly_BMS_UART::getPackMeasurements() // 0x90
     get.packCurrent = ((float)(((this->my_rxBuffer[8] << 8) | this->my_rxBuffer[9]) - 30000) / 10.0f);
     get.packSOC = ((float)((this->my_rxBuffer[10] << 8) | this->my_rxBuffer[11]) / 10.0f);
 #ifdef DALY_BMS_DEBUG
-
-    DEBUG_SERIAL.println("<DALY-BMS DEBUG> " + (String)get.packVoltage + "V, " + (String)get.packCurrent + "A, " + (String)get.packSOC + "SOC");
-    // debug current anomaly
-    DEBUG_SERIAL.print("<DALY-BMS DEBUG> Byte8: ");
-    DEBUG_SERIAL.print(this->my_rxBuffer[8], BIN);
-
-    DEBUG_SERIAL.print(" Byte9: ");
-    DEBUG_SERIAL.print(this->my_rxBuffer[9], BIN);
-
-    DEBUG_SERIAL.print(" Byte8 shifted: ");
-    DEBUG_SERIAL.print((this->my_rxBuffer[8] << 8), BIN);
-
-#ifdef DALY_BMS_DEBUG
     DEBUG_SERIAL.println("<DALY-BMS DEBUG> " + (String)get.packVoltage + "V, " + (String)get.packCurrent + "A, " + (String)get.packSOC + "SOC");
 #endif
     return true;

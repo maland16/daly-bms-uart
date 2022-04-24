@@ -73,12 +73,6 @@ public:
         int cellTemperature[16];
 
         // data from 0x97
-        bool cellBalanceState[48];
-        bool cellBalanceActive;
-        == == == =
-                     int cellTemperature[16]; // array of cell Tmperatur sensors
-
-        // data from 0x97
         bool cellBalanceState[48]; // bool array of cell balance states
         bool cellBalanceActive;    // bool is cell balance active
 
