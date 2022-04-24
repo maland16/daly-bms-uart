@@ -1,5 +1,8 @@
 #include "Arduino.h"
 #include "daly-bms-uart.h"
+// for debuggin
+#define DALY_BMS_DEBUG
+#define DEBUG_SERIAL Serial1
 
 //----------------------------------------------------------------------
 // Public Functions
@@ -21,7 +24,7 @@ bool Daly_BMS_UART::Init()
         return false;
     }
 
-    // Initialize the serial link to 9600 baud with 8 data bits and no parity bits, per the Daly BMS spec
+    // Intialize the serial link to 9600 baud with 8 data bits and no parity bits, per the Daly BMS spec
     this->my_serialIntf->begin(9600, SERIAL_8N1);
 
     // Set up the output buffer with some values that won't be changing
@@ -38,45 +41,27 @@ bool Daly_BMS_UART::Init()
     return true;
 }
 
-bool Daly_BMS_UART::updateAllValues()
+bool Daly_BMS_UART::update()
 {
-    // There are better ways to write this, but this is fine...
+
     if (!getPackMeasurements())
-    {
         return false; // 0x90
-    }
     if (!getMinMaxCellVoltage())
-    {
         return false; // 0x91
-    }
     if (!getPackTemp())
-    {
         return false; // 0x92
-    }
     if (!getDischargeChargeMosStatus())
-    {
         return false; // 0x93
-    }
     if (!getStatusInfo())
-    {
         return false; // 0x94
-    }
     if (!getCellVoltages())
-    {
         return false; // 0x95
-    }
     if (!getCellTemperature())
-    {
         return false; // 0x96
-    }
     if (!getCellBalanceState())
-    {
         return false; // 0x97
-    }
     if (!getFailureCodes())
-    {
         return false; // 0x98
-    }
 
     return true;
 }
@@ -95,18 +80,6 @@ bool Daly_BMS_UART::getPackMeasurements() // 0x90
     get.packVoltage = ((float)((this->my_rxBuffer[4] << 8) | this->my_rxBuffer[5]) / 10.0f);
     get.packCurrent = ((float)(((this->my_rxBuffer[8] << 8) | this->my_rxBuffer[9]) - 30000) / 10.0f);
     get.packSOC = ((float)((this->my_rxBuffer[10] << 8) | this->my_rxBuffer[11]) / 10.0f);
-#ifdef DALY_BMS_DEBUG
-
-    DEBUG_SERIAL.println("<DALY-BMS DEBUG> " + (String)get.packVoltage + "V, " + (String)get.packCurrent + "A, " + (String)get.packSOC + "SOC");
-    // debug current anomaly
-    DEBUG_SERIAL.print("<DALY-BMS DEBUG> Byte8: ");
-    DEBUG_SERIAL.print(this->my_rxBuffer[8], BIN);
-
-    DEBUG_SERIAL.print(" Byte9: ");
-    DEBUG_SERIAL.print(this->my_rxBuffer[9], BIN);
-
-    DEBUG_SERIAL.print(" Byte8 shifted: ");
-    DEBUG_SERIAL.print((this->my_rxBuffer[8] << 8), BIN);
 
 #ifdef DALY_BMS_DEBUG
     DEBUG_SERIAL.println("<DALY-BMS DEBUG> " + (String)get.packVoltage + "V, " + (String)get.packCurrent + "A, " + (String)get.packSOC + "SOC");
@@ -491,9 +464,9 @@ bool Daly_BMS_UART::setBmsReset() // 0x00 Reset the BMS
 void Daly_BMS_UART::sendCommand(COMMAND cmdID)
 {
 
-    do // clear all incoming serial to avoid data collision
+    do // clear all incomming serial to avoid data collision
     {
-        static_cast<void>(this->my_serialIntf->read());
+        char t __attribute__((unused)) = this->my_serialIntf->read();
     } while (this->my_serialIntf->read() > 0);
 
     uint8_t checksum = 0;
@@ -503,7 +476,7 @@ void Daly_BMS_UART::sendCommand(COMMAND cmdID)
     {
         checksum += this->my_txBuffer[i];
     }
-    // Add the checksum to the end of the transmit buffer
+    // put it on the frame
     this->my_txBuffer[12] = checksum;
 
 #ifdef DALY_BMS_DEBUG

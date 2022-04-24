@@ -1,11 +1,6 @@
 #ifndef DALY_BMS_UART_H
 #define DALY_BMS_UART_H
 
-// Uncomment the below #define to enable debugging print statements.
-// NOTE: You must call DEBUG_SERIAL.being(<baud rate>) in your setup() for this to work
-#define DEBUG_SERIAL Serial
-#define DALY_BMS_DEBUG
-
 #define XFER_BUFFER_LENGTH 13
 
 class Daly_BMS_UART
@@ -26,12 +21,6 @@ public:
         CHRG_FET = 0xDA,
         BMS_RESET = 0x00,
     };
-
-    /**
-     * @brief get struct holds all the data we collect from the BMS
-     * @details Update the values using the various public get___ functions,
-     * or update them all using updateAllValues()
-     */
     struct
     {
         // data from 0x90
@@ -70,13 +59,7 @@ public:
         float cellVmV[48]; // Store Cell Voltages in mV
 
         // data from 0x96
-        int cellTemperature[16];
-
-        // data from 0x97
-        bool cellBalanceState[48];
-        bool cellBalanceActive;
-        == == == =
-                     int cellTemperature[16]; // array of cell Tmperatur sensors
+        int cellTemperature[16]; // array of cell Tmperatur sensors
 
         // data from 0x97
         bool cellBalanceState[48]; // bool array of cell balance states
@@ -86,9 +69,6 @@ public:
         String aDebug;
     } get;
 
-    /**
-     * @brief alarm struct holds booleans for all the possible alarms (aka warnings/errors) the BMS can report
-     */
     struct
     {
         // data from 0x98
@@ -155,10 +135,6 @@ public:
         bool failureOfLowVoltageNoCharging;
     } alarm;
 
-    /**
-     * @brief Construct a new Daly_BMS_UART object
-     * @param serialIntf The hardware serial peripheral used to talk UART to the BMS
-     */
     Daly_BMS_UART(HardwareSerial &serialIntf);
 
     /**
@@ -168,9 +144,9 @@ public:
     bool Init();
 
     /**
-     * @brief Update all the values in the get struct
+     * @brief Updating the Data from the BMS
      */
-    bool updateAllValues();
+    bool update();
 
     /**
      * @brief Gets Voltage, Current, and SOC measurements from the BMS
@@ -195,17 +171,18 @@ public:
 
     /**
      * @brief Get the general Status Info
+     *
      */
     bool getStatusInfo();
 
     /**
      * @brief Get Cell Voltages
+     *
      */
     bool getCellVoltages();
 
     /**
-     * @brief   Get temperature sensor readings in degrees C?
-     * @details temperature accounts for 1 byte, according to the
+     * @brief   Each temperature accounts for 1 byte, according to the
                 actual number of temperature send, the maximum 21
                 byte, send in 3 frames
                 Byte0:frame number, starting at 0
@@ -231,7 +208,8 @@ public:
     bool getFailureCodes();
 
     /**
-     * @brief set the Discharging MOS State
+     * @brief
+     * set the Discharging MOS State
      */
     bool setDischargeMOS(bool sw);
 
@@ -248,8 +226,8 @@ public:
     bool getDischargeChargeMosStatus();
 
     /**
-     * @brief Reset The BMS
-     * @details TODO
+     * @brief Reseting The BMS
+     * @details Reseting the BMS and let it restart
      */
     bool setBmsReset();
 
@@ -261,7 +239,8 @@ private:
     void sendCommand(COMMAND cmdID);
 
     /**
-     * @brief Reads from the UART link into my_rxBuffer and validates the received data using validateChecksum
+     * @brief Send the command ID to the BMS
+     * @details
      * @return True on success, false on failure
      */
     bool receiveBytes(void);
