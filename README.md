@@ -4,7 +4,7 @@ This library uses the Arduino Serial library to communicate with a DALY BMS over
 ## How to use this library  
 -Download a zip of this library using the green button above  
 -Follow [the instructions here](https://www.arduino.cc/en/guide/libraries) under "Manual installation"  
--Use the public functions defined in "daly-bms-uart.h" to your heart's content  
+-Use the public functions defined in "daly-bms-uart.h" to read data from the BMS and populate the "get" struct   
 -Don't forget to construct a Daly_BMS_UART object and Init()!  
 -See the example that's included in this library  
 
@@ -48,9 +48,9 @@ Here's an overview of the commands that are supported by this library. See the f
 - Uncomment [this define](https://github.com/maland16/daly-bms-uart/blob/main/daly-bms-uart.h#L8) to get lots of debug printing to the Arduino Serial Monitor. I added these statements to help as I developed the code and ran into issues. Beyond that, I've done my best to comment extensively.  
 
 ## Future Improvements
+### Clean up/corrections  
+First & foremost there are a lot of wacky things in this repo that work, but are not done the best possible way. Cleaning things up and correcting bad coding practices would be huge.   
 ### The ability to write data to the BMS
 The protocol description (see /docs/) doesn't mention anything about how to write data to the BMS, but it must be possible because the PC application (see /pc-software/) can set the parameters of the BMS. I've included some logic analyzer captures of communication between the BMS and PC application that someone can probably use to reverse engineer the protocol. I'm certain it's pretty simple, I honestly wouldn't be surprised if it were just the reading protocol with some small tweak.
-### Support for more commands
-There are a bunch of additional commands that are outlined in the protocol description document, so far I've only added support for the ones I intend to use.
 ### Redesign
-This library was purpose built for [this project](https://github.com/maland16/citicar-charger) and I made it a library in the hopes someone would get some utility out of it, but it could use to be redesigned from the ground up to be more capable/useful.
+This library was purpose built for [this project](https://github.com/maland16/citicar-charger) and I made it a library in the hopes someone would get some utility out of it, but it could use to be redesigned from the ground up to be more capable/useful. This library underwent a very significant redesign in PR#4 (shoutout to @softwarecrash) but I think it could still be a lot more user friendly.

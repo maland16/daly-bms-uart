@@ -1,6 +1,11 @@
 #ifndef DALY_BMS_UART_H
 #define DALY_BMS_UART_H
 
+// Uncomment the below #define to enable debugging print statements.
+// NOTE: You must call DEBUG_SERIAL.being(<baud rate>) in your setup() for this to work
+#define DEBUG_SERIAL Serial
+#define DALY_BMS_DEBUG
+
 #define XFER_BUFFER_LENGTH 13
 
 class Daly_BMS_UART
@@ -21,56 +26,65 @@ public:
         FAILURE_CODES = 0x98,
         DISCHRG_FET = 0xD9,
         CHRG_FET = 0xDA,
-        BMS_RESET = 0x00,  //Reseting the BMS
+        BMS_RESET = 0x00, // Reseting the BMS
     };
+
+    /**
+     * @brief get struct holds all the data we collect from the BMS
+     * @details Update the values using the various public get___ functions,
+     * or update them all using updateAllValues()
+     */
     struct
     {
-        //data from 0x90
-        float packVoltage;          //pressure (0.1 V) 
-        float packCurrent;          //acquisition (0.1 V) 
-        float packSOC;              //State Of Charge
-        
-        //data from 0x91
-        float maxCellmV;            //maximum monomer voltage (mV) 
-        int maxCellVNum;            //Maximum Unit Voltage cell No.
-        float minCellmV;            //minimum monomer voltage (mV) 
-        int minCellVNum;            //Minimum Unit Voltage cell No.
-        float cellDiff;             //difference betwen cells
+        // data from 0x90
+        float packVoltage; // pressure (0.1 V)
+        float packCurrent; // acquisition (0.1 V)
+        float packSOC;     // State Of Charge
 
-        //data from 0x92
-        int tempMax;              // maximum monomer temperature (40 Offset,°C)
-        int tempMin;              //Maximum monomer temperature cell No.
-        float tempAverage;          //Avergae Temperature
+        // data from 0x91
+        float maxCellmV; // maximum monomer voltage (mV)
+        int maxCellVNum; // Maximum Unit Voltage cell No.
+        float minCellmV; // minimum monomer voltage (mV)
+        int minCellVNum; // Minimum Unit Voltage cell No.
+        float cellDiff;  // difference betwen cells
 
-        //data from 0x93
-        String chargeDischargeStatus;  //charge/discharge status (0 stationary ,1 charge ,2 discharge)
-        bool chargeFetState;        //charging MOS tube status
-        bool disChargeFetState;     //discharge MOS tube state
-        int bmsHeartBeat;           //BMS life(0~255 cycles) 
-        int resCapacitymAh;         //residual capacity mAH
+        // data from 0x92
+        int tempMax;       // maximum monomer temperature (40 Offset,°C)
+        int tempMin;       // Maximum monomer temperature cell No.
+        float tempAverage; // Avergae Temperature
 
-        //data from 0x94
-        int numberOfCells;          //amount of cells
-        int numOfTempSensors;       //amount of temp sensors
-        bool chargeState;           //charger status 0=disconnected 1=connected
-        bool loadState;             //Load Status 0=disconnected 1=connected
-        bool dIO[8];                //No information about this
-        int bmsCycles;              //charge / discharge cycles
-        
-        //data from 0x95
-        float cellVmV[48];          //Store Cell Voltages in mV
+        // data from 0x93
+        String chargeDischargeStatus; // charge/discharge status (0 stationary ,1 charge ,2 discharge)
+        bool chargeFetState;          // charging MOS tube status
+        bool disChargeFetState;       // discharge MOS tube state
+        int bmsHeartBeat;             // BMS life(0~255 cycles)
+        int resCapacitymAh;           // residual capacity mAH
 
-        //data from 0x96
+        // data from 0x94
+        int numberOfCells;    // amount of cells
+        int numOfTempSensors; // amount of temp sensors
+        bool chargeState;     // charger status 0=disconnected 1=connected
+        bool loadState;       // Load Status 0=disconnected 1=connected
+        bool dIO[8];          // No information about this
+        int bmsCycles;        // charge / discharge cycles
+
+        // data from 0x95
+        float cellVmV[48]; // Store Cell Voltages in mV
+
+        // data from 0x96
         int cellTemperature[16];
 
-        //data from 0x97
+        // data from 0x97
         bool cellBalanceState[48];
         bool cellBalanceActive;
     } get;
 
+    /**
+     * @brief alarm struct holds booleans for all the possible alarms (aka warnings/errors) the BMS can report
+     */
     struct
     {
-        //data from 0x98
+        // data from 0x98
         /* 0x00 */
         bool levelOneCellVoltageTooHigh;
         bool levelTwoCellVoltageTooHigh;
@@ -134,6 +148,10 @@ public:
         bool failureOfLowVoltageNoCharging;
     } alarm;
 
+    /**
+     * @brief Construct a new Daly_BMS_UART object
+     * @param serialIntf The hardware serial peripheral used to talk UART to the BMS
+     */
     Daly_BMS_UART(HardwareSerial &serialIntf);
 
     /**
@@ -143,9 +161,9 @@ public:
     bool Init();
 
     /**
-     * send data to the bms and update the values
+     * @brief Update all the values in the get struct
      */
-    bool update();
+    bool updateAllValues();
 
     /**
      * @brief Gets Voltage, Current, and SOC measurements from the BMS
@@ -155,7 +173,7 @@ public:
 
     /**
      * @brief Gets the pack temperature in degrees celsius
-     * @details This function uses the MIN_MAX_TEMPERATURE command, and averages the 
+     * @details This function uses the MIN_MAX_TEMPERATURE command, and averages the
      * min and max temperatures to get the returned value
      * @return True on successful aquisition, false otherwise
      */
@@ -170,23 +188,22 @@ public:
 
     /**
      * @brief Get the general Status Info
-     * 
      */
     bool getStatusInfo();
 
     /**
      * @brief Get Cell Voltages
-     * 
      */
     bool getCellVoltages();
 
     /**
-     * @brief   Each temperature accounts for 1 byte, according to the
+     * @brief   Get temperature sensor readings in degrees C?
+     * @details temperature accounts for 1 byte, according to the
                 actual number of temperature send, the maximum 21
                 byte, send in 3 frames
                 Byte0:frame number, starting at 0
                 Byte1~byte7:cell temperature(40 Offset ,℃)
-     * 
+     *
      */
     bool getCellTemperature();
 
@@ -196,39 +213,39 @@ public:
                 ...
                 Bit47:Cell 48 balance state
                 Bit48~Bit63：reserved
-     * 
+     *
      */
     bool getCellBalanceState();
 
     /**
      * @brief Get the Failure Codes
-     * 
+     *
      */
     bool getFailureCodes();
 
     /**
-     * @brief 
-     * set the Discharging MOS State
+     * @brief set the Discharging MOS State
      */
-    bool setDischargeMOS (bool sw);
+    bool setDischargeMOS(bool sw);
 
     /**
      * @brief set the Charging MOS State
-     * 
+     *
      */
-    bool setChargeMOS (bool sw);
+    bool setChargeMOS(bool sw);
 
     /**
      * @brief Read the charge and discharge MOS States
-     * 
+     *
      */
     bool getDischargeChargeMosStatus();
 
     /**
-     * @brief Reseting The BMS
-     * 
+     * @brief Reset The BMS
+     * @details TODO
      */
     bool setBmsReset();
+
 private:
     /**
      * @brief Sends a complete packet with the specified command
@@ -237,8 +254,7 @@ private:
     void sendCommand(COMMAND cmdID);
 
     /**
-     * @brief 
-     * @details
+     * @brief Reads from the UART link into my_rxBuffer and validates the received data using validateChecksum
      * @return True on success, false on failure
      */
     bool receiveBytes(void);
