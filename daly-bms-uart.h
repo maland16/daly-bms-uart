@@ -11,8 +11,6 @@
 class Daly_BMS_UART
 {
 public:
-    // These command names are adapted/translated from the protocol description (see /docs/)
-    // Note: Not all are currently supported with public functions
     enum COMMAND
     {
         VOUT_IOUT_SOC = 0x90,
@@ -26,7 +24,7 @@ public:
         FAILURE_CODES = 0x98,
         DISCHRG_FET = 0xD9,
         CHRG_FET = 0xDA,
-        BMS_RESET = 0x00, // Reseting the BMS
+        BMS_RESET = 0x00,
     };
 
     /**
@@ -77,6 +75,15 @@ public:
         // data from 0x97
         bool cellBalanceState[48];
         bool cellBalanceActive;
+        == == == =
+                     int cellTemperature[16]; // array of cell Tmperatur sensors
+
+        // data from 0x97
+        bool cellBalanceState[48]; // bool array of cell balance states
+        bool cellBalanceActive;    // bool is cell balance active
+
+        // debug data string
+        String aDebug;
     } get;
 
     /**

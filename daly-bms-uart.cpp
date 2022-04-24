@@ -108,11 +108,8 @@ bool Daly_BMS_UART::getPackMeasurements() // 0x90
     DEBUG_SERIAL.print(" Byte8 shifted: ");
     DEBUG_SERIAL.print((this->my_rxBuffer[8] << 8), BIN);
 
-    DEBUG_SERIAL.print(" added byte9 to 8: ");
-    DEBUG_SERIAL.print((this->my_rxBuffer[8] << 8 | this->my_rxBuffer[9]), BIN);
-
-    DEBUG_SERIAL.print(" remove offset -30000, mAh: ");
-    DEBUG_SERIAL.print(((this->my_rxBuffer[8] << 8 | this->my_rxBuffer[9]) - 30000), BIN);
+#ifdef DALY_BMS_DEBUG
+    DEBUG_SERIAL.println("<DALY-BMS DEBUG> " + (String)get.packVoltage + "V, " + (String)get.packCurrent + "A, " + (String)get.packSOC + "SOC");
 #endif
     return true;
 }
@@ -150,8 +147,8 @@ bool Daly_BMS_UART::getPackTemp() // 0x92
         return false;
     }
 
-    get.tempMax = (this->my_rxBuffer[4] - 40); // byte 0 from datasheet
-    get.tempMax = (this->my_rxBuffer[6] - 40); // byte 3 from datasheet
+    get.tempMax = (this->my_rxBuffer[4] - 40);
+    get.tempMax = (this->my_rxBuffer[6] - 40);
     get.tempAverage = (get.tempMax + get.tempMin) / 2;
 
     return true;
