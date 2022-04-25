@@ -52,7 +52,7 @@ Here's an overview of the commands that are supported by this library. See the f
 - The BMS has no internal power source, and needs to be connected to the battery for the UART communication to work.
 - Make sure your Tx/Rx aren't mixed up, in the picture above Tx/Rx are labeled with respect to the BMS.  
 - I could not have made this work/debugged this without a logic analyzer hooked up to the UART lines to see what's going on. They can be had pretty cheaply and are an invaluable tool for working on these kinds of things.  
-- Uncomment [this define](https://github.com/maland16/daly-bms-uart/blob/main/daly-bms-uart.h#L8) to get lots of debug printing to the Arduino Serial Monitor. I added these statements to help as I developed the code and ran into issues. Beyond that, I've done my best to comment extensively.  
+- Uncomment [this define](https://github.com/maland16/daly-bms-uart/blob/main/daly-bms-uart.h#L8) and set your Serial port to get lots of debug printing to the Arduino Serial Monitor. I added these statements to help as I developed the code and ran into issues. Beyond that, I've done my best to comment extensively.  
 
 ## Future Improvements
 ### Clean up/corrections  
