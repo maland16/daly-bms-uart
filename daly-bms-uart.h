@@ -21,6 +21,10 @@ public:
         CHRG_FET = 0xDA,
         BMS_RESET = 0x00,
     };
+
+    /**
+     * @brief get struct holds all the data collected from the BMS and is populated using the update() API
+     */
     struct
     {
         // data from 0x90
@@ -68,6 +72,11 @@ public:
         // debug data string
         String aDebug;
     } get;
+
+    /**
+     * @brief alarm struct holds booleans corresponding to all the possible alarms
+     * (aka errors/warnings) the BMS can report
+     */
 
     struct
     {
@@ -135,6 +144,11 @@ public:
         bool failureOfLowVoltageNoCharging;
     } alarm;
 
+    /**
+     * @brief Construct a new Daly_BMS_UART object
+     *
+     * @param serialIntf UART interface BMS is connected to
+     */
     Daly_BMS_UART(HardwareSerial &serialIntf);
 
     /**

@@ -5,11 +5,7 @@
 #define BMS_SERIAL Serial1 // Set the serial port for communication with the Daly BMS
                            // Set the Serial Debug port
 
-// ------------------------- DEBUG INFO PRINTING --------------------------- //
-// NOTE: You must define DEBUG_SERIAL above and call DEBUG_SERIAL.begin(<baud rate>)
-// in your setup() for this to work
-// #define DALY_BMS_DEBUG // Uncomment this #define to enable debugging print statements.
-// ------------------------------------------------------------------------- //
+// To print debug info from the inner workings of the library, see the README
 
 // Construct the BMS driver and passing in the Serial interface (which pins to use)
 Daly_BMS_UART bms(BMS_SERIAL);
@@ -17,7 +13,7 @@ Daly_BMS_UART bms(BMS_SERIAL);
 void setup()
 {
   // Used for debug printing
-  DEBUG_SERIAL.begin(9600); // Serial interface for the Arduino Serial Monitor
+  Serial.begin(9600); // Serial interface for the Arduino Serial Monitor
 
   bms.Init(); // This call sets up the driver
 }
@@ -25,37 +21,37 @@ void setup()
 void loop()
 {
   // Print a message and wait for input from the user
-  DEBUG_SERIAL.println("Press any key to query data from the BMS");
-  while (DEBUG_SERIAL.available() == 0)
+  Serial.println("Press any key to query data from the BMS");
+  while (Serial.available() == 0)
   {
   }
-  DEBUG_SERIAL.read();
-  DEBUG_SERIAL.read(); // To discard the new line that gets sent
+  Serial.read();
+  Serial.read(); // To discard the new line that gets sent
 
   // call to update the data from the bms
-  bms.updateAllValues();
+  bms.update();
 
   // And print them out!
-  DEBUG_SERIAL.println("basic BMS Data:              " + (String)bms.get.packVoltage + "V " + (String)bms.get.packCurrent + "I " + (String)bms.get.packSOC + "\% ");
-  DEBUG_SERIAL.println("Package Temperature:         " + (String)bms.get.tempAverage);
-  DEBUG_SERIAL.println("Highest Cell Voltage Nr:     " + (String)bms.get.maxCellVNum + " with voltage " + (String)(bms.get.maxCellmV / 1000));
-  DEBUG_SERIAL.println("Lowest Cell Voltage Nr:      " + (String)bms.get.minCellVNum + " with voltage " + (String)(bms.get.minCellmV / 1000));
-  DEBUG_SERIAL.println("Number of Cells:             " + (String)bms.get.numberOfCells);
-  DEBUG_SERIAL.println("Number of Temp Sensors:      " + (String)bms.get.numOfTempSensors);
-  DEBUG_SERIAL.println("BMS Chrg / Dischrg Cycles:   " + (String)bms.get.bmsCycles);
-  DEBUG_SERIAL.println("BMS Heartbeat:               " + (String)bms.get.bmsHeartBeat); // cycle 0-255
-  DEBUG_SERIAL.println("Discharge MOSFet Status:     " + (String)bms.get.disChargeFetState);
-  DEBUG_SERIAL.println("Charge MOSFet Status:        " + (String)bms.get.chargeFetState);
-  DEBUG_SERIAL.println("Remaining Capacity mAh:      " + (String)bms.get.resCapacitymAh);
+  Serial.println("basic BMS Data:              " + (String)bms.get.packVoltage + "V " + (String)bms.get.packCurrent + "I " + (String)bms.get.packSOC + "\% ");
+  Serial.println("Package Temperature:         " + (String)bms.get.tempAverage);
+  Serial.println("Highest Cell Voltage Nr:     " + (String)bms.get.maxCellVNum + " with voltage " + (String)(bms.get.maxCellmV / 1000));
+  Serial.println("Lowest Cell Voltage Nr:      " + (String)bms.get.minCellVNum + " with voltage " + (String)(bms.get.minCellmV / 1000));
+  Serial.println("Number of Cells:             " + (String)bms.get.numberOfCells);
+  Serial.println("Number of Temp Sensors:      " + (String)bms.get.numOfTempSensors);
+  Serial.println("BMS Chrg / Dischrg Cycles:   " + (String)bms.get.bmsCycles);
+  Serial.println("BMS Heartbeat:               " + (String)bms.get.bmsHeartBeat); // cycle 0-255
+  Serial.println("Discharge MOSFet Status:     " + (String)bms.get.disChargeFetState);
+  Serial.println("Charge MOSFet Status:        " + (String)bms.get.chargeFetState);
+  Serial.println("Remaining Capacity mAh:      " + (String)bms.get.resCapacitymAh);
   //... any many many more data
 
   for (size_t i = 0; i < size_t(bms.get.numberOfCells); i++)
   {
-    DEBUG_SERIAL.println("Remaining Capacity mAh:      " + (String)bms.get.cellVmV[i]);
+    Serial.println("Remaining Capacity mAh:      " + (String)bms.get.cellVmV[i]);
   }
 
   // for alarm flags - for all flags see the alarm struct in daly-bms-uart.h and refer to the datasheet
-  DEBUG_SERIAL.println("Level one Cell V to High:    " + (String)bms.alarm.levelOneCellVoltageTooHigh);
+  Serial.println("Level one Cell V to High:    " + (String)bms.alarm.levelOneCellVoltageTooHigh);
 
   /**
    * Advanced functions:
