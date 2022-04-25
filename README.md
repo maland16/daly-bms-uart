@@ -4,7 +4,7 @@ This library uses the Arduino Serial library to communicate with a DALY BMS over
 ## How to use this library  
 -Download a zip of this library using the green button above  
 -Follow [the instructions here](https://www.arduino.cc/en/guide/libraries) under "Manual installation"  
--Use the public functions defined in "daly-bms-uart.h" to your heart's content  
+-Use the public functions defined in "daly-bms-uart.h" to read data from the BMS and populate the "get" struct   
 -Don't forget to construct a Daly_BMS_UART object and Init()!  
 -See the example that's included in this library  
 
@@ -26,7 +26,7 @@ This is what an incoming packet might look like. In this case it's the "Voltage,
 | - | - | - | - | - | - | 
 | 0xA5 | 0x01 | 0x90 (see below) | 0x08 (fixed?*) | 0x023A0000753001ED (8 bytes) | 0x0D (See below) |
 
-\*It's not made totally clear in the protocol description but it seems like the received data length might actually be longer for certain commands. Reading all cell voltages & all temperature sensor readings are examples of commands that could have much longer data sections.  
+\*It's not made totally clear in the protocol description but the received data length might actually be longer for certain commands. Reading all cell voltages & all temperature sensor readings for instance results in a response with a much longer data section.  
 
 #### Data section
 The first two bytes of the Data correspond to the Voltage in tenths of volts (0x023A = 570 = 57.0V). I'm honestly not sure what the next two bytes are for, the documentation calls them "acquisition voltage". They always come back 0 for me so lets skip them. The next two bytes are the current in tenths of amps, with an offset of 30000 (0x7530 = 300000 - 30,000 = 0 = 0.0A). The final two bytes are the state of chare (or SOC) in tenths of a percent (0x01ED = 493 = 49.3%).   
@@ -40,6 +40,13 @@ Here's an overview of the commands that are supported by this library. See the f
 | Voltage, Current, SOC | 0x90 | getPackMeasurements() |  
 | Min & Max Cell Voltages | 0x91 | getMinMaxCellVoltage() |  
 | Min & Max Temp Sensor readings | 0x92 | getPackTemp() will take the min and max temperature readings, average them, and return that value. Most of the DALY BMSs that I've seen only have one temperature sensor. |  
+| Charge/Discharge MOSFET state | 0x93 | getDischargeChargeMosStatus() |
+| Status Information 1 | 0x94 | getStatusInfo() |
+| Individual Cell Voltages | 0x95 | getCellVoltages() |
+| Temperature Sensors | 0x96 | getCellTemperature() |
+| Cell Balance States | 0x97 | getCellBalanceState() |
+| Failure Codes/Alarms | 0x98 | getFailureCodes() |
+
 
 ## Troubleshooting
 - The BMS has no internal power source, and needs to be connected to the battery for the UART communication to work.
@@ -48,9 +55,13 @@ Here's an overview of the commands that are supported by this library. See the f
 - Uncomment [this define](https://github.com/maland16/daly-bms-uart/blob/main/daly-bms-uart.h#L8) to get lots of debug printing to the Arduino Serial Monitor. I added these statements to help as I developed the code and ran into issues. Beyond that, I've done my best to comment extensively.  
 
 ## Future Improvements
+### Clean up/corrections  
+First & foremost there are a lot of wacky things in this repo that work, but are not done the best possible way. Cleaning things up and correcting bad coding practices would help maintainability & make tinkering with the library more approachable.   
 ### The ability to write data to the BMS
-The protocol description (see /docs/) doesn't mention anything about how to write data to the BMS, but it must be possible because the PC application (see /pc-software/) can set the parameters of the BMS. I've included some logic analyzer captures of communication between the BMS and PC application that someone can probably use to reverse engineer the protocol. I'm certain it's pretty simple, I honestly wouldn't be surprised if it were just the reading protocol with some small tweak.
-### Support for more commands
-There are a bunch of additional commands that are outlined in the protocol description document, so far I've only added support for the ones I intend to use.
-### Redesign
-This library was purpose built for [this project](https://github.com/maland16/citicar-charger) and I made it a library in the hopes someone would get some utility out of it, but it could use to be redesigned from the ground up to be more capable/useful.
+The protocol description (see /docs/) doesn't mention anything about how to write data to the BMS, but it must be possible because the PC application (see /pc-software/) can set the parameters of the BMS. I've included some logic analyzer captures of communication between the BMS and PC application that someone can probably use to reverse engineer the protocol. I'm certain it's pretty simple, I honestly wouldn't be surprised if it were just the reading protocol with some small tweak.   
+*Update 4/22:* softwarecrash added the ability to send commands to enable/disable the charge/discharge MOSFETs, which is awesome. I think there's even more to add here.
+
+## Contributors
+maland16 - Created the repo, laid the groundwork  
+softwarecrash - Redesigned the "getters", added a ton of new functionality  
+pricemat - Cpp consultant, moral support
