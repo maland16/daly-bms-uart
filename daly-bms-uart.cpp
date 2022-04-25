@@ -119,13 +119,13 @@ bool Daly_BMS_UART::getPackTemp() // 0x92
     if (!this->receiveBytes())
     {
 #ifdef DEBUG_SERIAL
-        DEBUG_SERIAL.print("<DALY-BMS DEBUG> Receive failed, Temp value won't be modified!\n");
+        DEBUG_SERIAL.print("<DALY-BMS DEBUG> Receive failed, Temp values won't be modified!\n");
 #endif
         return false;
     }
 
     get.tempMax = (this->my_rxBuffer[4] - 40);
-    get.tempMax = (this->my_rxBuffer[6] - 40);
+    get.tempMin = (this->my_rxBuffer[6] - 40);
     get.tempAverage = (get.tempMax + get.tempMin) / 2;
 
     return true;

@@ -169,9 +169,8 @@ public:
     bool getPackMeasurements();
 
     /**
-     * @brief Gets the pack temperature in degrees celsius
-     * @details This function uses the MIN_MAX_TEMPERATURE command, and averages the
-     * min and max temperatures to get the returned value
+     * @brief Gets the pack temperature from the min and max of all the available temperature sensors
+     * @details Populates tempMax, tempMax, and tempAverage in the "get" struct
      * @return True on successful aquisition, false otherwise
      */
     bool getPackTemp();
