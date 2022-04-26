@@ -128,6 +128,7 @@ bool Daly_BMS_UART::getPackTemp() // 0x92
         return false;
     }
 
+    // An offset of 40 is added by the BMS to avoid having to deal with negative numbers, see protocol in /docs/
     get.tempMax = (this->my_rxBuffer[4] - 40);
     get.tempMin = (this->my_rxBuffer[6] - 40);
     get.tempAverage = (get.tempMax + get.tempMin) / 2;
@@ -159,6 +160,7 @@ bool Daly_BMS_UART::getDischargeChargeMosStatus() // 0x93
         get.chargeDischargeStatus = "Discharge";
         break;
     }
+
     get.chargeFetState = this->my_rxBuffer[5];
     get.disChargeFetState = this->my_rxBuffer[6];
     get.bmsHeartBeat = this->my_rxBuffer[7];
@@ -184,12 +186,13 @@ bool Daly_BMS_UART::getStatusInfo() // 0x94
     get.chargeState = this->my_rxBuffer[6];
     get.loadState = this->my_rxBuffer[7];
 
+    // Parse the 8 bits into 8 booleans that represent the states of the Digital IO
     for (size_t i = 0; i < 8; i++)
     {
         get.dIO[i] = bitRead(this->my_rxBuffer[8], i);
     }
 
-    get.bmsCycles = ((uint16_t)my_rxBuffer[9] << 0x08) | (uint16_t)my_rxBuffer[10];
+    get.bmsCycles = ((uint16_t)this->my_rxBuffer[9] << 0x08) | (uint16_t)this->my_rxBuffer[10];
 
     return true;
 }
@@ -419,8 +422,10 @@ bool Daly_BMS_UART::setDischargeMOS(bool sw) // 0xD9 0x80 First Byte 0x01=ON 0x0
 #ifdef DEBUG_SERIAL
         DEBUG_SERIAL.println("Attempting to switch discharge MOSFETs on");
 #endif
+        // Set the first byte of the data payload to 1, indicating that we want to switch on the MOSFET
         this->my_txBuffer[4] = 0x01;
         this->sendCommand(COMMAND::DISCHRG_FET);
+        // Clear the buffer for further use
         this->my_txBuffer[4] = 0x00;
     }
     else
@@ -448,8 +453,10 @@ bool Daly_BMS_UART::setChargeMOS(bool sw) // 0xDA 0x80 First Byte 0x01=ON 0x00=O
 #ifdef DEBUG_SERIAL
         DEBUG_SERIAL.println("Attempting to switch charge MOSFETs on");
 #endif
+        // Set the first byte of the data payload to 1, indicating that we want to switch on the MOSFET
         this->my_txBuffer[4] = 0x01;
         this->sendCommand(COMMAND::CHRG_FET);
+        // Clear the buffer for further use
         this->my_txBuffer[4] = 0x00;
     }
     else
@@ -478,7 +485,7 @@ bool Daly_BMS_UART::setBmsReset() // 0x00 Reset the BMS
     if (!this->receiveBytes())
     {
 #ifdef DEBUG_SERIAL
-        DEBUG_SERIAL.print("<DALY-BMS DEBUG> Send failed, Discharge FET won't be modified!\n");
+        DEBUG_SERIAL.print("<DALY-BMS DEBUG> Send failed, can't verify BMS was reset!\n");
 #endif
         return false;
     }
@@ -492,7 +499,6 @@ bool Daly_BMS_UART::setBmsReset() // 0x00 Reset the BMS
 
 void Daly_BMS_UART::sendCommand(COMMAND cmdID)
 {
-
     do // clear all incoming serial to avoid data collision
     {
         char t __attribute__((unused)) = this->my_serialIntf->read();
