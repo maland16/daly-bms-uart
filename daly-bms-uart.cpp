@@ -80,6 +80,10 @@ bool Daly_BMS_UART::getPackMeasurements() // 0x90
 #ifdef DEBUG_SERIAL
         DEBUG_SERIAL.print("<DALY-BMS DEBUG> Receive failed, V, I, & SOC values won't be modified!\n");
 #endif
+        //if we got no or wrong data lets unset it
+        get.packVoltage = NAN;
+        get.packCurrent = NAN;
+        get.packSOC = NAN;
         return false;
     }
 
@@ -522,6 +526,13 @@ void Daly_BMS_UART::sendCommand(COMMAND cmdID)
 #endif
 
     this->my_serialIntf->write(this->my_txBuffer, XFER_BUFFER_LENGTH);
+    //fix the sleep Bug
+    //first wait for transmission end
+    this->my_serialIntf->flush();
+    //then read out the last incomming data and put it in the garbage
+    while(Serial.available()){
+    Serial.read();
+    }
 }
 
 bool Daly_BMS_UART::receiveBytes(void)
