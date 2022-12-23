@@ -24,6 +24,7 @@ public:
         DISCHRG_FET = 0xD9,
         CHRG_FET = 0xDA,
         BMS_RESET = 0x00,
+        SET_SOC = 0x21,
     };
 
     /**
@@ -44,8 +45,8 @@ public:
         float cellDiff;  // difference betwen cells
 
         // data from 0x92
-        int tempMax;       // maximum monomer temperature (40 Offset,°C)
-        int tempMin;       // Maximum monomer temperature cell No.
+        //int tempMax;       // maximum monomer temperature (40 Offset,°C)
+        //int tempMin;       // Maximum monomer temperature cell No.
         float tempAverage; // Avergae Temperature
 
         // data from 0x93
@@ -237,6 +238,12 @@ public:
     bool setChargeMOS(bool sw);
 
     /**
+     * @brief set the SOC
+     *
+     */
+    bool setSOC(uint16_t sw);
+
+    /**
      * @brief Read the charge and discharge MOS States
      *
      */
@@ -273,6 +280,12 @@ private:
      * @details Useful for debugging
      */
     void barfRXBuffer();
+
+    /**
+     * @brief Clear all data from the Get struct
+     * @details when wrong or missing data comes in it need sto be cleared
+     */
+    void clearGet();
 
     /**
      * @brief Serial interface used for communication
