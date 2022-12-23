@@ -2,7 +2,7 @@
 #include "daly-bms-uart.h"
 
 // Uncomment the below define to enable debug printing
-//#define DEBUG_SERIAL Serial
+// #define DEBUG_SERIAL Serial1
 
 //----------------------------------------------------------------------
 // Public Functions
@@ -80,10 +80,15 @@ bool Daly_BMS_UART::getPackMeasurements() // 0x90
 #ifdef DEBUG_SERIAL
         DEBUG_SERIAL.print("<DALY-BMS DEBUG> Receive failed, V, I, & SOC values won't be modified!\n");
 #endif
-        //if we got no or wrong data lets unset it
-        get.packVoltage = NAN;
-        get.packCurrent = NAN;
-        get.packSOC = NAN;
+    //if we got no or wrong data lets unset it
+    //need to be modified to clear the compiler warning
+
+    //new function unset all
+    //memset(&get, 0, sizeof(get));
+    //get.packVoltage = NAN;
+    //get.packCurrent = NAN;
+    //get.packSOC = NAN;
+    clearGet();
         return false;
     }
 
@@ -133,9 +138,10 @@ bool Daly_BMS_UART::getPackTemp() // 0x92
     }
 
     // An offset of 40 is added by the BMS to avoid having to deal with negative numbers, see protocol in /docs/
-    get.tempMax = (this->my_rxBuffer[4] - 40);
-    get.tempMin = (this->my_rxBuffer[6] - 40);
-    get.tempAverage = (get.tempMax + get.tempMin) / 2;
+    //get.tempMax = (this->my_rxBuffer[4] - 40);
+    //get.tempMin = (this->my_rxBuffer[6] - 40);
+    //get.tempAverage = (get.tempMax + get.tempMin) / 2;
+     get.tempAverage = ((this->my_rxBuffer[4] - 40) + (this->my_rxBuffer[6] - 40)) / 2;
 
     return true;
 }
@@ -274,7 +280,7 @@ bool Daly_BMS_UART::getCellTemperature() // 0x96
 
             get.cellTemperature[sensorNo] = (this->my_rxBuffer[5 + i] - 40);
             sensorNo++;
-            if (sensorNo + 1 >= get.numOfTempSensors)
+            if (sensorNo >= get.numOfTempSensors)
                 break;
         }
     }
@@ -497,6 +503,33 @@ bool Daly_BMS_UART::setBmsReset() // 0x00 Reset the BMS
     return true;
 }
 
+bool Daly_BMS_UART::setSOC(uint16_t val) // 0xDA 0x80 First Byte 0x01=ON 0x00=OFF
+{
+    if (val >= 0 && val <=100)
+    {
+#ifdef DEBUG_SERIAL
+        DEBUG_SERIAL.println("Attempting to set the SOC");
+#endif
+        val = val*10;
+        this->my_txBuffer[10] = (val & 0xFF00) >> 8;
+        this->my_txBuffer[11] = (val & 0x00FF);
+        this->sendCommand(COMMAND::SET_SOC);
+        // Clear the buffer for further use
+        this->my_txBuffer[10] = 0x00;
+        this->my_txBuffer[11] = 0x00;
+    }
+
+    if (!this->receiveBytes())
+    {
+#ifdef DEBUG_SERIAL
+        DEBUG_SERIAL.print("<DALY-BMS DEBUG> No response from BMS! Can't verify SOC.\n");
+#endif
+        return false;
+    }
+
+    return true;
+}
+
 //----------------------------------------------------------------------
 // Private Functions
 //----------------------------------------------------------------------
@@ -562,6 +595,7 @@ bool Daly_BMS_UART::receiveBytes(void)
 #endif
         return false;
     }
+
     return true;
 }
 
@@ -592,4 +626,47 @@ void Daly_BMS_UART::barfRXBuffer(void)
     }
     DEBUG_SERIAL.print("]\n");
 #endif
+}
+
+void Daly_BMS_UART::clearGet(void)
+{
+        // data from 0x90
+        get.packVoltage = NAN; // pressure (0.1 V)
+        get.packCurrent = NAN; // acquisition (0.1 V)
+        get.packSOC = NAN;     // State Of Charge
+
+        // data from 0x91
+        get.maxCellmV = NAN; // maximum monomer voltage (mV)
+        get.maxCellVNum = 0; // Maximum Unit Voltage cell No.
+        get.minCellmV = NAN; // minimum monomer voltage (mV)
+        get.minCellVNum = 0; // Minimum Unit Voltage cell No.
+        get.cellDiff = NAN;  // difference betwen cells
+
+        // data from 0x92
+        get.tempAverage = 0; // Avergae Temperature
+
+        // data from 0x93
+        get.chargeDischargeStatus = ""; // charge/discharge status (0 stationary ,1 charge ,2 discharge)
+        get.chargeFetState = NAN;          // charging MOS tube status
+        get.disChargeFetState = NAN;       // discharge MOS tube state
+        get.bmsHeartBeat = 0;             // BMS life(0~255 cycles)
+        get.resCapacitymAh = 0;           // residual capacity mAH
+
+        // data from 0x94
+        get.numberOfCells = 0;    // amount of cells
+        get.numOfTempSensors = 0; // amount of temp sensors
+        get.chargeState = NAN;     // charger status 0=disconnected 1=connected
+        get.loadState = NAN;       // Load Status 0=disconnected 1=connected
+        memset(get.dIO, false, sizeof(get.dIO));          // No information about this
+        get.bmsCycles = 0;        // charge / discharge cycles
+
+        // data from 0x95
+        memset(get.cellVmV, 0, sizeof(get.cellVmV)); // Store Cell Voltages in mV
+
+        // data from 0x96
+        memset(get.cellTemperature, 0, sizeof(get.cellTemperature)); // array of cell Temperature sensors
+
+        // data from 0x97
+        memset(get.cellBalanceState, false, sizeof(get.cellBalanceState)); // bool array of cell balance states
+        get.cellBalanceActive = NAN;    // bool is cell balance active
 }
