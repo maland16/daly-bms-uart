@@ -1,5 +1,5 @@
 # Overview
-This library uses the Arduino Serial library to communicate with a DALY BMS over UART. It was originally designed for use with the **Teensy 4.0** as a part of [this project](https://github.com/maland16/citicar-charger) and has not been tested on official Arduino hardware. 
+This library uses the Arduino Serial library to communicate with a DALY BMS over UART. It was originally designed for use with the **Teensy 4.0** as a part of [this project](https://github.com/maland16/citicar-charger) and has not officially been tested on official Arduino hardware.  
 
 ## How to use this library  
 -Download a zip of this library using the green button above  
@@ -60,6 +60,9 @@ First & foremost there are a lot of wacky things in this repo that work, but are
 ### The ability to write data to the BMS
 The protocol description (see /docs/) doesn't mention anything about how to write data to the BMS, but it must be possible because the PC application (see /pc-software/) can set the parameters of the BMS. I've included some logic analyzer captures of communication between the BMS and PC application that someone can probably use to reverse engineer the protocol. I'm certain it's pretty simple, I honestly wouldn't be surprised if it were just the reading protocol with some small tweak.   
 *Update 4/22:* softwarecrash added the ability to send commands to enable/disable the charge/discharge MOSFETs, which is awesome. I think there's even more to add here.
+
+## Forks
+### [Linux Fork](https://github.com/tizbac/daly-bms-uart-linux)
 
 ## Contributors
 maland16 - Created the repo, laid the groundwork  
