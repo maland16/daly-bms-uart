@@ -283,7 +283,7 @@ private:
 
     /**
      * @brief Clear all data from the Get struct
-     * @details when wrong or missing data comes in it need sto be cleared
+     * @details when data from the BMS is not valid or missing this function is used to clear it
      */
     void clearGet();
 
