@@ -562,7 +562,7 @@ void Daly_BMS_UART::sendCommand(COMMAND cmdID)
     //fix the sleep Bug
     //first wait for transmission end
     this->my_serialIntf->flush();
-    //then read out the last incomming data and put it in the garbage
+    // Read out the last incoming data and discard it
     while(Serial.available()){
     Serial.read();
     }
