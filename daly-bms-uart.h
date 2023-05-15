@@ -28,43 +28,44 @@ public:
 
     /**
      * @brief get struct holds all the data collected from the BMS and is populated using the update() API
+     * @details Comments specify precision and units where applicable
      */
     struct
     {
         // data from 0x90
-        float packVoltage; // pressure (0.1 V)
-        float packCurrent; // acquisition (0.1 V)
+        float packVoltage; // Total pack voltage (0.1 V)
+        float packCurrent; // Current in (+) or out (-) of pack (0.1 A)
         float packSOC;     // State Of Charge
 
         // data from 0x91
-        float maxCellmV; // maximum monomer voltage (mV)
-        int maxCellVNum; // Maximum Unit Voltage cell No.
-        float minCellmV; // minimum monomer voltage (mV)
-        int minCellVNum; // Minimum Unit Voltage cell No.
-        float cellDiff;  // difference betwen cells
+        float maxCellmV; // Maximum cell voltage (mV)
+        int maxCellVNum; // Number of cell with highest voltage
+        float minCellmV; // Minimum cell voltage (mV)
+        int minCellVNum; // Number of cell with lowest voltage
+        float cellDiff;  // Difference between min and max cell voltages
 
         // data from 0x92
-        int tempMax;       // maximum monomer temperature (40 Offset,°C)
-        int tempMin;       // Maximum monomer temperature cell No.
-        float tempAverage; // Avergae Temperature
+        int tempMax;       // Maximum temperature sensor reading (°C)
+        int tempMin;       // Minimum temperature sensor reading (°C)
+        float tempAverage; // Average of temp sensors
 
         // data from 0x93
-        String chargeDischargeStatus; // charge/discharge status (0 stationary ,1 charge ,2 discharge)
-        bool chargeFetState;          // charging MOS tube status
-        bool disChargeFetState;       // discharge MOS tube state
-        int bmsHeartBeat;             // BMS life(0~255 cycles)
+        String chargeDischargeStatus; // charge/discharge status (0 stationary, 1 charge, 2 discharge)
+        bool chargeFetState;          // charging MOSFET status
+        bool disChargeFetState;       // discharge MOSFET state
+        int bmsHeartBeat;             // BMS life (0~255 cycles)?
         int resCapacitymAh;           // residual capacity mAH
 
         // data from 0x94
-        int numberOfCells;    // amount of cells
-        int numOfTempSensors; // amount of temp sensors
-        bool chargeState;     // charger status 0=disconnected 1=connected
+        int numberOfCells;    // Cell count
+        int numOfTempSensors; // Temp sensor count
+        bool chargeState;     // charger status 0 = disconnected 1 = connected
         bool loadState;       // Load Status 0=disconnected 1=connected
         bool dIO[8];          // No information about this
         int bmsCycles;        // charge / discharge cycles
 
         // data from 0x95
-        float cellVmV[48]; // Store Cell Voltages in mV
+        float cellVmV[48]; // Store Cell Voltages (mV)
 
         // data from 0x96
         int cellTemperature[16]; // array of cell Temperature sensors

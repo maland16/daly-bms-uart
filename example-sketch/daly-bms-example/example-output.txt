@@ -1,0 +1,74 @@
+// This output was read from my BMS setup in the citicar
+// Provided as an example to help with debugging/validating that your setup works
+
+Press any key to query data from the BMS
+
+<DALY-BMS DEBUG> Send command: 0x90 Checksum = 0x7D
+<DALY-BMS DEBUG> Calculated checksum: 8, Received: 8
+<DALY-BMS DEBUG> 54.10V, 0.00A, 77.10SOC
+<DALY-BMS DEBUG> Send command: 0x91 Checksum = 0x7E
+<DALY-BMS DEBUG> Calculated checksum: 174, Received: 174
+<DALY-BMS DEBUG> Send command: 0x92 Checksum = 0x7F
+<DALY-BMS DEBUG> Calculated checksum: 234, Received: 234
+<DALY-BMS DEBUG> Send command: 0x93 Checksum = 0x80
+<DALY-BMS DEBUG> Calculated checksum: 204, Received: 204
+<DALY-BMS DEBUG> Send command: 0x94 Checksum = 0x81
+<DALY-BMS DEBUG> Calculated checksum: 81, Received: 81
+<DALY-BMS DEBUG> Send command: 0x95 Checksum = 0x82
+<DALY-BMS DEBUG> Calculated checksum: 200, Received: 200
+<DALY-BMS DEBUG> Frame No.: 1 Cell No: 1. 3869mV
+<DALY-BMS DEBUG> Frame No.: 1 Cell No: 2. 3870mV
+<DALY-BMS DEBUG> Frame No.: 1 Cell No: 3. 3870mV
+<DALY-BMS DEBUG> Calculated checksum: 196, Received: 196
+<DALY-BMS DEBUG> Frame No.: 2 Cell No: 4. 3870mV
+<DALY-BMS DEBUG> Frame No.: 2 Cell No: 5. 3870mV
+<DALY-BMS DEBUG> Frame No.: 2 Cell No: 6. 3864mV
+<DALY-BMS DEBUG> Calculated checksum: 203, Received: 203
+<DALY-BMS DEBUG> Frame No.: 3 Cell No: 7. 3868mV
+<DALY-BMS DEBUG> Frame No.: 3 Cell No: 8. 3870mV
+<DALY-BMS DEBUG> Frame No.: 3 Cell No: 9. 3872mV
+<DALY-BMS DEBUG> Calculated checksum: 210, Received: 210
+<DALY-BMS DEBUG> Frame No.: 4 Cell No: 10. 3872mV
+<DALY-BMS DEBUG> Frame No.: 4 Cell No: 11. 3872mV
+<DALY-BMS DEBUG> Frame No.: 4 Cell No: 12. 3872mV
+<DALY-BMS DEBUG> Calculated checksum: 209, Received: 209
+<DALY-BMS DEBUG> Frame No.: 5 Cell No: 13. 3872mV
+<DALY-BMS DEBUG> Frame No.: 5 Cell No: 14. 3870mV
+
+<DALY-BMS DEBUG> Send command: 0x96 Checksum = 0x83
+<DALY-BMS DEBUG> Calculated checksum: 133, Received: 133
+<DALY-BMS DEBUG> Frame No.: 1 Sensor No: 1. 26°C
+
+<DALY-BMS DEBUG> Send command: 0x97 Checksum = 0x84
+<DALY-BMS DEBUG> Calculated checksum: 69, Received: 69
+<DALY-BMS DEBUG> Cell Balance State: 00000000000000
+
+<DALY-BMS DEBUG> Send command: 0x98 Checksum = 0x85
+<DALY-BMS DEBUG> Calculated checksum: 70, Received: 70
+basic BMS Data:              54.10V 0.00I 77.10% 
+Package Temperature:         26.00
+Highest Cell Voltage Nr:     13 with voltage 3.87
+Lowest Cell Voltage Nr:      6 with voltage 3.86
+Number of Cells:             14
+Number of Temp Sensors:      1
+BMS Chrg / Dischrg Cycles:   2
+BMS Heartbeat:               139
+Discharge MOSFet Status:     1
+Charge MOSFet Status:        1
+Remaining Capacity mAh:      131070
+Remaining Capacity mAh:      3869.00
+Remaining Capacity mAh:      3870.00
+Remaining Capacity mAh:      3870.00
+Remaining Capacity mAh:      3870.00
+Remaining Capacity mAh:      3870.00
+Remaining Capacity mAh:      3864.00
+Remaining Capacity mAh:      3868.00
+Remaining Capacity mAh:      3870.00
+Remaining Capacity mAh:      3872.00
+Remaining Capacity mAh:      3872.00
+Remaining Capacity mAh:      3872.00
+Remaining Capacity mAh:      3872.00
+Remaining Capacity mAh:      3872.00
+Remaining Capacity mAh:      3870.00
+Level one Cell V to High:    0
+Press any key to query data from the BMS

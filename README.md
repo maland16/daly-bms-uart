@@ -34,7 +34,7 @@ The first two bytes of the Data correspond to the Voltage in tenths of volts (0x
 The last byte of the packet is a checksum, which is calculated by summing up all the rest of the bytes in the packet and truncating the result to one byte. (0xA5 + 0x01 + 0x90 + ... + 0xED = 0x30D = 0x0D).  
 
 ### Supported Commands
-Here's an overview of the commands that are supported by this library. See the full protocol info in /docs/ for more info.  
+Here's an overview of the commands that are supported by this library. See the full protocol info in /docs/ for more info. Calling update() calls all of these functions at once, but you may only need specific data, so it's likely best to just call the get functions for the specific data you'd like.  
 | Command | Hex | Support API |  
 | - | - | - |
 | Voltage, Current, SOC | 0x90 | getPackMeasurements() |  

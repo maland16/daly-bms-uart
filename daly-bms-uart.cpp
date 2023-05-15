@@ -2,7 +2,7 @@
 #include "daly-bms-uart.h"
 
 // Uncomment the below define to enable debug printing
-//#define DEBUG_SERIAL Serial
+// #define DEBUG_SERIAL Serial
 
 //----------------------------------------------------------------------
 // Public Functions
@@ -83,7 +83,7 @@ bool Daly_BMS_UART::getPackMeasurements() // 0x90
         return false;
     }
 
-    // Pull the relevent values out of the buffer
+    // Pull the relevant values out of the buffer
     get.packVoltage = ((float)((this->my_rxBuffer[4] << 8) | this->my_rxBuffer[5]) / 10.0f);
     // The current measurement is given with a 30000 unit offset (see /docs/)
     get.packCurrent = ((float)(((this->my_rxBuffer[8] << 8) | this->my_rxBuffer[9]) - 30000) / 10.0f);
@@ -323,7 +323,7 @@ bool Daly_BMS_UART::getCellBalanceState() // 0x97
     {
         DEBUG_SERIAL.print(get.cellBalanceState[i]);
     }
-    DEBUG_SERIAL.println();
+    DEBUG_SERIAL.print("\n");
 #endif
 
     if (cellBalance > 0)
@@ -515,7 +515,7 @@ void Daly_BMS_UART::sendCommand(COMMAND cmdID)
     this->my_txBuffer[12] = checksum;
 
 #ifdef DEBUG_SERIAL
-    DEBUG_SERIAL.print("\n<DALY-BMS DEBUG> Send command: 0x");
+    DEBUG_SERIAL.print("<DALY-BMS DEBUG> Send command: 0x");
     DEBUG_SERIAL.print(cmdID, HEX);
     DEBUG_SERIAL.print(" Checksum = 0x");
     DEBUG_SERIAL.println(checksum, HEX);
