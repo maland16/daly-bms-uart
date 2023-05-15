@@ -47,6 +47,9 @@ Here's an overview of the commands that are supported by this library. See the f
 | Cell Balance States | 0x97 | getCellBalanceState() |
 | Failure Codes/Alarms | 0x98 | getFailureCodes() |
 
+### Turning on/off the BMS over UART  
+See this issue discussion for an overview on how to "enable/disable" the BMS
+https://github.com/maland16/daly-bms-uart/issues/18
 
 ## Troubleshooting
 - The BMS has no internal power source, and needs to be connected to the battery for the UART communication to work.
