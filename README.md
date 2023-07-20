@@ -11,7 +11,7 @@ This library uses the Arduino Serial library to communicate with a DALY BMS over
 ## Hardware setup
 Below is a picture of the side of my DALY bms (yours might look slightly different) showing which pins are used to communicate over UART. 
 <img src="https://raw.githubusercontent.com/maland16/daly-bms-uart/main/docs/UART%20Interface.jpg">
-I used this library on a teensy 4.0, who's serial pins are only 3V tolerant, so I also used [this logic level shifter](https://www.adafruit.com/product/757) to bring the logic level up to 5V, which is what I observed while using the PC UART USB adapter included with the BMS.
+I used this library on a teensy 4.0, who's serial pins are only 3V tolerant, so I also used [this logic level shifter](https://www.adafruit.com/product/757) to bring the logic level up to 5V, which is what I observed while using the PC UART USB adapter included with the BMS. Update: It's possible the BMS would communicate just fine with a 3.3V logic high level, see [this discussion](https://github.com/maland16/daly-bms-uart/discussions/23#discussion-5399289).  
 
 ## The DALY BMS UART Protocol
 I found the UART Protocol used by the Daly BMS described in the PDF inside /docs/ on [diysolarform.com.](https://diysolarforum.com/resources/daly-smart-bms-manual-and-documentation.48/) It can be a little tough to decipher, so here's a brief overview.
