@@ -1,17 +1,21 @@
 #include <Arduino.h>
-
 #include <daly-bms-uart.h> // This is where the library gets pulled in
 
-#define BMS_SERIAL Serial1 // Set the serial port for communication with the Daly BMS
-                           // Set the Serial Debug port
+// Pins of the software serial interface
+#define rxPin 2
+#define txPin 3
+
 
 // To print debug info from the inner workings of the library, see the README
 
 // Construct the BMS driver and passing in the Serial interface (which pins to use)
-Daly_BMS_UART bms(BMS_SERIAL);
+Daly_BMS_UART bms(new SoftwareSerial(rxPin, txPin));
 
 void setup()
 {
+  pinMode(rxPin, INPUT);
+  pinMode(txPin, OUTPUT);
+
   // Used for debug printing
   Serial.begin(9600); // Serial interface for the Arduino Serial Monitor
 

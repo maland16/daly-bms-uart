@@ -1,3 +1,5 @@
+#include "SerialInterface.h"
+
 #ifndef DALY_BMS_UART_H
 #define DALY_BMS_UART_H
 
@@ -151,10 +153,15 @@ public:
 
     /**
      * @brief Construct a new Daly_BMS_UART object
-     *
-     * @param serialIntf UART interface BMS is connected to
+     * @param serialIntf Hardware UART interface BMS is connected to
      */
-    Daly_BMS_UART(HardwareSerial &serialIntf);
+    Daly_BMS_UART(HardwareSerial *serial_peripheral);
+
+    /**
+     * @brief Construct a new Daly_BMS_UART object
+     * @param serialIntf Software UART interface BMS is connected to
+     */
+    Daly_BMS_UART(SoftwareSerial *serial_peripheral);
 
     /**
      * @brief Initializes this driver
@@ -279,7 +286,7 @@ private:
      * @brief Serial interface used for communication
      * @details This is set in the constructor
      */
-    HardwareSerial *my_serialIntf;
+    SerialInterface* my_serialIntf;
 
     /**
      * @brief Buffer used to transmit data to the BMS
